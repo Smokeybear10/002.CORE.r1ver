@@ -1,13 +1,12 @@
 [package]
-name        = "robopoker"
+name        = "montepoker"
 version     = "0.1.1"
 authors     = ["Kelechi Ukah <ukahkelechi@gmail.com>"]
 description = "Implementations of No-Limit Texas Hold-Em solution."
-homepage    = "https://github.com/krukah/robopoker"
-repository  = "https://github.com/krukah/robopoker"
+homepage    = "https://github.com/thomasou/MontePoker"
+repository  = "https://github.com/thomasou/MontePoker"
 readme      = "README.md"
 keywords    = ["poker", "cards", "cfr", "mcts", "holdem"]
-license     = "MIT"
 edition     = "2021"
 
 [dependencies]

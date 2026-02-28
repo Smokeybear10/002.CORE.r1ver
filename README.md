@@ -1,9 +1,7 @@
-robopoker
+MontePoker
 ===========================
-[![license](https://img.shields.io/github/license/krukah/robopoker)](LICENSE)
-[![build](https://github.com/krukah/robopoker/actions/workflows/rust.yml/badge.svg)](https://github.com/krukah/robopoker/actions/workflows/rust.yml)
 
-`robopoker` is a Rust library to play, learn, analyze, track, and solve No-Limit Texas Hold'em.
+`montepoker` is a Rust library to play, learn, analyze, track, and solve No-Limit Texas Hold'em.
 
 # Overview
 
