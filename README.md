@@ -1,7 +1,7 @@
-MontePoker
+R1VER
 ===========================
 
-`montepoker` is a Rust library to play, learn, analyze, track, and solve No-Limit Texas Hold'em.
+`r1ver` is a Rust library to play, learn, analyze, track, and solve No-Limit Texas Hold'em.
 
 # Overview
 
@@ -126,3 +126,4 @@ Tools for analyzing and querying results yielded from our training pipeline usin
 10. (2018). Depth-Limited Solving for Imperfect-Information Games. [(NeurIPS)](https://arxiv.org/pdf/1805.08195.pdf)
 11. (2017). Reduced Space and Faster Convergence in Imperfect-Information Games via Pruning. [(ICML)](http://www.cs.cmu.edu/~sandholm/reducedSpace.icml17.pdf)
 12. (2017). Safe and Nested Subgame Solving for Imperfect-Information Games. [(NIPS)](https://www.cs.cmu.edu/~noamb/papers/17-NIPS-Safe.pdf)
+# FORMATT
