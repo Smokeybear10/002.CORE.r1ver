@@ -45,7 +45,7 @@ impl Server {
                 .route("/blueprint", web::post().to(blueprint))
         })
         .workers(6)
-        .bind("127.0.0.1:8888")?
+        .bind("127.0.0.1:3002")?
         .run()
         .await
     }

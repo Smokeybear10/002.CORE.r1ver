@@ -19,3 +19,4 @@ react/.next/
 react/build/
 react/dist/
 react/node_modules/
+.gstack/

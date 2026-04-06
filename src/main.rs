@@ -1,9 +1,6 @@
-//! RoboPoker - A No-Limit Texas Hold'em Poker AI Implementation
-//!
-//! Author: Kelechi Ukah <ukahkelechi@gmail.com>
-//! Everything you could ever ask for in a library called robopoker.
+//! R1VER - A No-Limit Texas Hold'em Poker AI Implementation
 
-use robopoker::*;
+use r1ver::*;
 
 #[tokio::main]
 async fn main() {

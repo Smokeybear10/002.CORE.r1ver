@@ -1611,6 +1611,39 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74765f6d916ee2faa39bc8e68e4f3ed8949b48cccdac59983d287a7cb71ce9c5"
 
 [[package]]
+name = "r1ver"
+version = "0.1.1"
+dependencies = [
+ "actix-cors",
+ "actix-web",
+ "byteorder",
+ "bytes",
+ "clap 4.5.37",
+ "colored",
+ "console_error_panic_hook",
+ "criterion",
+ "dialoguer",
+ "env_logger",
+ "futures",
+ "getrandom",
+ "indicatif",
+ "js-sys",
+ "log",
+ "num_cpus",
+ "petgraph",
+ "rand",
+ "rayon",
+ "serde",
+ "serde_json",
+ "simplelog",
+ "tokio",
+ "tokio-postgres",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+]
+
+[[package]]
 name = "rand"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1702,39 +1735,6 @@ name = "regex-syntax"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
-
-[[package]]
-name = "robopoker"
-version = "0.1.1"
-dependencies = [
- "actix-cors",
- "actix-web",
- "byteorder",
- "bytes",
- "clap 4.5.37",
- "colored",
- "console_error_panic_hook",
- "criterion",
- "dialoguer",
- "env_logger",
- "futures",
- "getrandom",
- "indicatif",
- "js-sys",
- "log",
- "num_cpus",
- "petgraph",
- "rand",
- "rayon",
- "serde",
- "serde_json",
- "simplelog",
- "tokio",
- "tokio-postgres",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test",
-]
 
 [[package]]
 name = "rustc-demangle"
