@@ -169,7 +169,7 @@ export function ScrollManager() {
           const el = explorer as HTMLElement
           if (self.progress > 0.7) {
             const t = (self.progress - 0.7) / 0.3
-            el.style.filter = `blur(${t * 6}px)`
+            el.style.filter = `blur(${t * 3}px)`
           } else {
             el.style.filter = ""
           }
@@ -187,7 +187,7 @@ export function ScrollManager() {
           const el = strategy as HTMLElement
           if (self.progress > 0.7) {
             const t = (self.progress - 0.7) / 0.3
-            el.style.filter = `blur(${t * 6}px)`
+            el.style.filter = `blur(${t * 3}px)`
           } else {
             el.style.filter = ""
           }
