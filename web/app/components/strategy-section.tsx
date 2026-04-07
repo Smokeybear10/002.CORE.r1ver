@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { SplitText } from "./split-text"
 
 type Street = {
   name: string
@@ -109,18 +110,18 @@ export function StrategySection() {
   return (
     <section className="strategy-section" id="strategy">
       <div className="strategy-inner">
-        <div className="section-header">
-          <div className="section-label">§ 05 · Strategy</div>
-          <h2 className="section-title">
+        <div className="section-header reveal-group">
+          <div className="section-label reveal-child">§ 05 · Strategy</div>
+          <SplitText as="h2" className="section-title" delay={0.15}>
             The solver&apos;s <span className="em">blueprint.</span>
-          </h2>
-          <p className="section-sub">
+          </SplitText>
+          <p className="section-sub reveal-child">
             Move through the streets. See the GTO action distribution for each
             decision point. This is not a recommendation. This is equilibrium.
           </p>
         </div>
 
-        <div className="strategy-layout">
+        <div className="strategy-layout reveal">
           <div className="timeline">
             {STREETS.map((s, i) => {
               const cls =

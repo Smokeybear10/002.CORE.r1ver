@@ -8,14 +8,19 @@ import { ChapterShape } from "@/app/components/chapter-shape"
 import { ChapterSpace } from "@/app/components/chapter-space"
 import { ExplorerSection } from "@/app/components/explorer-section"
 import { StrategySection } from "@/app/components/strategy-section"
+import { FilmGrain } from "@/app/components/film-grain"
+import { SplitText } from "@/app/components/split-text"
+import { ProgressBar } from "@/app/components/progress-bar"
 
 export default function LandingPage() {
   return (
     <>
       <BgCanvas />
+      <FilmGrain />
       <Wordmark />
       <Telemetry />
       <ScrollProgress />
+      <ProgressBar />
 
       <HeroSection />
       <ChapterShape />
@@ -24,30 +29,24 @@ export default function LandingPage() {
       <StrategySection />
 
       <section className="query-section">
-        <div className="query-inner">
-          <div className="query-label">§ 06 · Begin</div>
-          <h2 className="query-title">
+        <div className="query-inner reveal-group">
+          <div className="query-label reveal-child">§ 06 · Begin</div>
+          <SplitText as="h2" className="query-title" delay={0.15}>
             Ask the <span className="em">river.</span>
-          </h2>
-          <p className="section-sub" style={{ textAlign: "center", margin: "0 auto 48px" }}>
+          </SplitText>
+          <p className="section-sub reveal-child" style={{ textAlign: "center", margin: "0 auto 48px" }}>
             Full Explorer and Strategy viewer at production scale.
           </p>
-          <div className="query-cta-group">
+          <div className="query-cta-group reveal-child">
             <Link href="/explorer" className="query-cta">Explore Hands</Link>
             <Link href="/strategy" className="query-cta">Query Strategy</Link>
           </div>
         </div>
-      </section>
-
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <span className="footer-wordmark">
-            R<span className="one">1</span>VER
-          </span>
+        <div className="footer-inner footer-centered">
           <span>Thomas Ou · MMXXVI</span>
-          <span>Set in Instrument Serif &amp; JetBrains Mono</span>
+          <span>Instrument Serif · JetBrains Mono</span>
         </div>
-      </footer>
+      </section>
     </>
   )
 }

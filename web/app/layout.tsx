@@ -28,7 +28,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${serif.variable} ${mono.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <ScrollManager />
         {children}
       </body>

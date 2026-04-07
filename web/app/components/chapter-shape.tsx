@@ -41,25 +41,25 @@ export function ChapterShape() {
     <section className="chapter-scroll" id="chapter-2">
       <div className="chapter-sticky">
         <div className="chapter-inner">
-          <div>
-            <div className="chapter-label">
+          <div className="reveal-group">
+            <div className="chapter-label reveal-child">
               <span className="num">§ 02</span>
               <span className="line" />
               <span>The Shape of Equity</span>
             </div>
-            <h2 className="chapter-heading">
+            <h2 className="chapter-heading reveal-child">
               A cluster is <span className="em">not a number.</span>
               <br />
               It is a <span className="em">shape.</span>
             </h2>
-            <p className="chapter-body">
+            <p className="chapter-body reveal-child">
               Eighteen hundred observations share this hand&apos;s equity
               distribution. Most hover near the median. A thin left tail punishes
               the unfortunate runouts; a fat right tail rewards the dominant
               ones. The solver sees the whole curve, not the average.
             </p>
           </div>
-          <div className="distribution">
+          <div className="distribution reveal">
             <svg className="dist-svg" viewBox="0 0 400 180" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="dist-fill" x1="0" y1="0" x2="0" y2="1">
