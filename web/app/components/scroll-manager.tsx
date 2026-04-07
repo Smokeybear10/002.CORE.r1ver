@@ -165,6 +165,15 @@ export function ScrollManager() {
         end: "+=50%",
         pin: true,
         pinSpacing: true,
+        onUpdate: (self) => {
+          const el = explorer as HTMLElement
+          if (self.progress > 0.7) {
+            const t = (self.progress - 0.7) / 0.3
+            el.style.filter = `blur(${t * 6}px)`
+          } else {
+            el.style.filter = ""
+          }
+        },
       })
     }
     if (strategy) {
@@ -174,6 +183,15 @@ export function ScrollManager() {
         end: "+=50%",
         pin: true,
         pinSpacing: true,
+        onUpdate: (self) => {
+          const el = strategy as HTMLElement
+          if (self.progress > 0.7) {
+            const t = (self.progress - 0.7) / 0.3
+            el.style.filter = `blur(${t * 6}px)`
+          } else {
+            el.style.filter = ""
+          }
+        },
       })
     }
 

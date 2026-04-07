@@ -20,7 +20,6 @@ export default function LandingPage() {
       <Wordmark />
       <Telemetry />
       <ScrollProgress />
-      <ProgressBar />
 
       <HeroSection />
       <ChapterShape />
@@ -42,11 +41,19 @@ export default function LandingPage() {
             <Link href="/strategy" className="query-cta">Query Strategy</Link>
           </div>
         </div>
-        <div className="footer-inner footer-centered">
-          <span>Thomas Ou · MMXXVI</span>
-          <span>Instrument Serif · JetBrains Mono</span>
-        </div>
       </section>
+
+      <footer className="site-footer reveal">
+        <div className="footer-row">
+          <span className="footer-wordmark">R<span className="one">1</span>VER</span>
+          <span>Thomas Ou · MMXXVI</span>
+          <span className="footer-links">
+            <a href="https://thomasou.com" target="_blank" rel="noopener noreferrer">thomasou.com</a>
+            <a href="https://github.com/Smokeybear10" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://www.linkedin.com/in/thomasou0/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          </span>
+        </div>
+      </footer>
     </>
   )
 }
