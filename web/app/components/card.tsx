@@ -14,7 +14,7 @@ export function Card({ card }: { card: ParsedCard }) {
         borderRadius: 6,
         boxShadow: "0 4px 20px rgba(0,0,0,0.6), 0 0 1px rgba(201,168,76,0.2)",
         color: suitColor(card.suit),
-        fontFamily: "'Georgia', serif",
+        fontFamily: "var(--font-serif), serif",
         fontSize: 16,
         letterSpacing: 1,
         cursor: "default",

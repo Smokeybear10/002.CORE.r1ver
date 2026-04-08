@@ -1,7 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { api, type Decision } from "@/app/lib/api"
+import { BgCanvas } from "@/app/components/bg-canvas"
+import { FilmGrain } from "@/app/components/film-grain"
 
 type StrategyState = {
   decisions: Decision[]
@@ -61,7 +64,8 @@ function VerdictBlock({ decisions }: { decisions: Decision[] }) {
     <div style={{
       marginTop: 14, padding: "22px 26px",
       border: "1px solid rgba(201,168,76,0.18)",
-      background: "rgba(201,168,76,0.02)",
+      background:
+        "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(201,168,76,0.012) 10px, rgba(201,168,76,0.012) 11px), rgba(201,168,76,0.02)",
     }}>
       <div className="font-mono" style={{
         fontSize: 9, letterSpacing: 4, textTransform: "uppercase",
@@ -80,7 +84,7 @@ function VerdictBlock({ decisions }: { decisions: Decision[] }) {
               gap: 14, alignItems: "center",
             }}>
               <span style={{
-                fontFamily: "'Georgia', serif",
+                fontFamily: "var(--font-serif), serif",
                 fontStyle: isTop ? "normal" : "italic",
                 fontSize: 13,
                 color: isTop ? "#c9a84c" : "rgba(201,168,76,0.55)",
@@ -183,7 +187,7 @@ function StreetRow({
         </div>
       ) : variant === "pending" ? (
         <div style={{
-          fontFamily: "'Georgia', serif", fontSize: 14,
+          fontFamily: "var(--font-serif), serif", fontSize: 14,
           color: "rgba(201,168,76,0.15)", fontStyle: "italic", paddingTop: 4,
         }}>
           —
@@ -193,7 +197,7 @@ function StreetRow({
         <>
           <div style={{
             marginTop: actionChips.length > 0 ? 16 : 4,
-            fontFamily: "'Georgia', serif", fontSize: 15,
+            fontFamily: "var(--font-serif), serif", fontSize: 15,
             color: "#c9a84c", fontStyle: "italic",
           }}>
             The solver recommends:
@@ -237,182 +241,195 @@ export default function StrategyPage() {
   const pocket = data ? parsePocket(data.hand) : ""
 
   return (
-    <div className="max-w-[920px] mx-auto px-10 py-14">
-      {/* Header */}
-      <div className="mb-12 animate-fade-up">
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 8 }}>
-          <h1 style={{ fontSize: 36, fontWeight: 400, letterSpacing: 1 }}>Strategy Viewer</h1>
-          <span className="font-mono" style={{ color: "rgba(201,168,76,0.15)", fontSize: 11, letterSpacing: 2 }}>GTO</span>
-        </div>
-        <p style={{ color: "rgba(201,168,76,0.25)", fontSize: 14, fontStyle: "italic" }}>
-          Query the solver&apos;s blueprint strategy for any game state
-        </p>
-      </div>
+    <div className="inner-page">
+      <BgCanvas />
+      <FilmGrain />
 
-      {/* Input form */}
-      <form onSubmit={query} className="flex flex-col gap-5 mb-12 animate-fade-up-1">
-        <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-4 items-center">
-          <label style={{ color: "rgba(201,168,76,0.2)", fontSize: 10, textAlign: "right", letterSpacing: 3, textTransform: "uppercase" }}>Player</label>
-          <div className="flex" style={{ border: "1px solid rgba(201,168,76,0.08)", width: "fit-content" }}>
-            {["P0", "P1"].map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setTurn(p)}
-                className="px-4 py-2.5 text-xs font-mono transition-all duration-200"
-                style={{
-                  background: turn === p ? "rgba(201,168,76,0.06)" : "transparent",
-                  color: turn === p ? "#c9a84c" : "rgba(201,168,76,0.15)",
-                  letterSpacing: 2,
-                  borderRight: "1px solid rgba(201,168,76,0.04)",
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+      <nav className="inner-nav">
+        <Link href="/" className="inner-nav-wordmark">
+          R<span className="one">1</span>VER
+        </Link>
+        <span className="inner-nav-label">Strategy Viewer</span>
+      </nav>
 
-          <label style={{ color: "rgba(201,168,76,0.2)", fontSize: 10, textAlign: "right", letterSpacing: 3, textTransform: "uppercase" }}>Hand</label>
-          <input
-            type="text"
-            value={hand}
-            onChange={(e) => setHand(e.target.value)}
-            placeholder="AsKd~7h8c2s"
-            className="px-4 py-2.5 text-sm font-mono focus:outline-none transition-colors duration-200"
-            style={{ background: "transparent", border: "1px solid rgba(201,168,76,0.08)", color: "#c9a84c" }}
-            onFocus={(e) => e.target.style.borderColor = "rgba(201,168,76,0.25)"}
-            onBlur={(e) => e.target.style.borderColor = "rgba(201,168,76,0.08)"}
-          />
-
-          <label style={{ color: "rgba(201,168,76,0.2)", fontSize: 10, textAlign: "right", letterSpacing: 3, textTransform: "uppercase" }}>History</label>
-          <input
-            type="text"
-            value={actions}
-            onChange={(e) => setActions(e.target.value)}
-            placeholder="BLIND 1, BLIND 2, RAISE 6, CALL 4"
-            className="px-4 py-2.5 text-sm font-mono focus:outline-none transition-colors duration-200"
-            style={{ background: "transparent", border: "1px solid rgba(201,168,76,0.08)", color: "#c9a84c" }}
-            onFocus={(e) => e.target.style.borderColor = "rgba(201,168,76,0.25)"}
-            onBlur={(e) => e.target.style.borderColor = "rgba(201,168,76,0.08)"}
-          />
+      <div className="inner-main">
+        {/* Header */}
+        <div className="inner-header animate-fade-up">
+          <div className="inner-section-label">§ 05 · Strategy</div>
+          <h1 className="inner-title">
+            The solver&apos;s <span className="em">blueprint.</span>
+          </h1>
+          <p className="inner-subtitle">
+            Query the solver&apos;s blueprint strategy for any game state
+          </p>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading || !hand.trim()}
-          className="self-start px-7 py-2.5 text-xs font-mono transition-all duration-200 disabled:opacity-30"
-          style={{
-            border: "1px solid rgba(201,168,76,0.25)",
-            color: "#c9a84c",
-            background: "rgba(201,168,76,0.04)",
-            letterSpacing: 3,
-            textTransform: "uppercase",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(201,168,76,0.1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(201,168,76,0.1)" }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(201,168,76,0.04)"; e.currentTarget.style.boxShadow = "none" }}
-        >
-          {loading ? "···" : "Get Strategy"}
-        </button>
-      </form>
+        {/* Input form panel */}
+        <div className="inner-panel animate-fade-up-1" style={{ marginBottom: 32 }}>
+          <form onSubmit={query} className="flex flex-col gap-5">
+            <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-4 items-center">
+              <label className="font-mono" style={{ color: "rgba(201,168,76,0.2)", fontSize: 10, textAlign: "right", letterSpacing: 3, textTransform: "uppercase" }}>Player</label>
+              <div className="flex" style={{ border: "1px solid rgba(201,168,76,0.08)", width: "fit-content" }}>
+                {["P0", "P1"].map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setTurn(p)}
+                    className="px-4 py-2.5 text-xs font-mono transition-all duration-200"
+                    style={{
+                      background: turn === p ? "rgba(201,168,76,0.06)" : "transparent",
+                      color: turn === p ? "#c9a84c" : "rgba(201,168,76,0.15)",
+                      letterSpacing: 2,
+                      borderRight: "1px solid rgba(201,168,76,0.04)",
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
 
-      {/* Help */}
-      <div className="mb-12 space-y-1 font-mono animate-fade-up-2" style={{ color: "rgba(201,168,76,0.12)", fontSize: 11 }}>
-        <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Format:</span> pocket~board e.g. AsKd~7h8c2s</p>
-        <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Actions:</span> BLIND 1, CALL 4, RAISE 10, CHECK, FOLD, SHOVE 100, DEAL 7h8c2s</p>
-      </div>
-
-      {error && (
-        <div className="mb-8 px-5 py-3 text-sm animate-fade-up" style={{
-          border: "1px solid rgba(201,168,76,0.12)",
-          color: "rgba(201,168,76,0.6)",
-          background: "rgba(201,168,76,0.02)",
-        }}>
-          {error}
-        </div>
-      )}
-
-      {data && currentStreet && (
-        <div className="animate-fade-up">
-          {/* Timeline header */}
-          <div style={{ marginBottom: 40 }}>
-            <div style={{
-              fontFamily: "'Georgia', serif", fontSize: 32, fontWeight: 400,
-              color: "#c9a84c", letterSpacing: 1, marginBottom: 6,
-            }}>
-              {pocket}
-              <span style={{ color: "rgba(201,168,76,0.3)", margin: "0 12px", fontSize: 24 }}>→</span>
-              {currentStreet.name} decision
-            </div>
-            <div className="font-mono" style={{
-              fontSize: 10, letterSpacing: 3, textTransform: "uppercase",
-              color: "rgba(201,168,76,0.25)",
-            }}>
-              {data.turn} · Blueprint v0.1
-            </div>
-          </div>
-
-          {/* Timeline track */}
-          <div style={{ position: "relative", paddingLeft: 180 }}>
-            {streets.map((street, i) => {
-              const isCurrent = i === streets.length - 1
-              const isFirst = i === 0
-              const isLast = isCurrent && !nextStreetName
-              const subtitle = isCurrent
-                ? `${data.turn} to act`
-                : street.board
-                  ? formatBoard(street.board)
-                  : "—"
-              return (
-                <StreetRow
-                  key={i}
-                  name={street.name}
-                  subtitle={subtitle}
-                  actionChips={street.actions}
-                  variant={isCurrent ? "now" : "past"}
-                  decisions={isCurrent ? data.decisions : undefined}
-                  isFirst={isFirst}
-                  isLast={isLast}
-                />
-              )
-            })}
-            {nextStreetName && (
-              <StreetRow
-                name={nextStreetName}
-                subtitle="pending"
-                actionChips={[]}
-                variant="pending"
-                isLast
+              <label className="font-mono" style={{ color: "rgba(201,168,76,0.2)", fontSize: 10, textAlign: "right", letterSpacing: 3, textTransform: "uppercase" }}>Hand</label>
+              <input
+                type="text"
+                value={hand}
+                onChange={(e) => setHand(e.target.value)}
+                placeholder="AsKd~7h8c2s"
+                className="inner-input px-4 py-2.5 text-sm"
               />
-            )}
+
+              <label className="font-mono" style={{ color: "rgba(201,168,76,0.2)", fontSize: 10, textAlign: "right", letterSpacing: 3, textTransform: "uppercase" }}>History</label>
+              <input
+                type="text"
+                value={actions}
+                onChange={(e) => setActions(e.target.value)}
+                placeholder="BLIND 1, BLIND 2, RAISE 6, CALL 4"
+                className="inner-input px-4 py-2.5 text-sm"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !hand.trim()}
+              className="inner-btn self-start px-7 py-2.5 text-xs"
+            >
+              {loading ? "···" : "Get Strategy"}
+            </button>
+          </form>
+
+          <div className="mt-6 space-y-1 font-mono" style={{ color: "rgba(201,168,76,0.12)", fontSize: 11 }}>
+            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Format:</span> pocket~board e.g. AsKd~7h8c2s</p>
+            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Actions:</span> BLIND 1, CALL 4, RAISE 10, CHECK, FOLD, SHOVE 100, DEAL 7h8c2s</p>
           </div>
         </div>
-      )}
 
-      {!data && !loading && !error && (
-        <div className="flex flex-col items-center justify-center py-28 animate-fade-up-2">
-          <div style={{
-            width: 80, height: 80, borderRadius: 99, marginBottom: 32,
-            border: "1px solid rgba(201,168,76,0.08)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "radial-gradient(circle, rgba(201,168,76,0.03), transparent)",
+        {error && (
+          <div className="mb-8 px-5 py-3 text-sm animate-fade-up" style={{
+            border: "1px solid rgba(201,168,76,0.12)",
+            color: "rgba(201,168,76,0.6)",
+            background: "rgba(201,168,76,0.02)",
           }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 99,
-              border: "1px solid rgba(201,168,76,0.12)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 24px rgba(201,168,76,0.05)",
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: 99, background: "rgba(201,168,76,0.3)" }} />
+            {error}
+          </div>
+        )}
+
+        {data && currentStreet && (
+          <div className="animate-fade-up">
+            <div className="suit-divider">
+              <span className="suit-divider-symbols">♠ ♥ ♦ ♣</span>
+            </div>
+
+            {/* Timeline header */}
+            <div style={{ marginBottom: 40 }}>
+              <div style={{
+                fontFamily: "var(--font-serif), serif", fontSize: 32, fontWeight: 400,
+                color: "#c9a84c", letterSpacing: 1, marginBottom: 6,
+              }}>
+                {pocket}
+                <span style={{ color: "rgba(201,168,76,0.3)", margin: "0 12px", fontSize: 24 }}>→</span>
+                {currentStreet.name} decision
+              </div>
+              <div className="font-mono" style={{
+                fontSize: 10, letterSpacing: 3, textTransform: "uppercase",
+                color: "rgba(201,168,76,0.25)",
+              }}>
+                {data.turn} · Blueprint v0.1
+              </div>
+            </div>
+
+            {/* Timeline track */}
+            <div style={{ position: "relative", paddingLeft: 180 }}>
+              {streets.map((street, i) => {
+                const isCurrent = i === streets.length - 1
+                const isFirst = i === 0
+                const isLast = isCurrent && !nextStreetName
+                const subtitle = isCurrent
+                  ? `${data.turn} to act`
+                  : street.board
+                    ? formatBoard(street.board)
+                    : "—"
+                return (
+                  <StreetRow
+                    key={i}
+                    name={street.name}
+                    subtitle={subtitle}
+                    actionChips={street.actions}
+                    variant={isCurrent ? "now" : "past"}
+                    decisions={isCurrent ? data.decisions : undefined}
+                    isFirst={isFirst}
+                    isLast={isLast}
+                  />
+                )
+              })}
+              {nextStreetName && (
+                <StreetRow
+                  name={nextStreetName}
+                  subtitle="pending"
+                  actionChips={[]}
+                  variant="pending"
+                  isLast
+                />
+              )}
             </div>
           </div>
-          <p style={{ color: "rgba(201,168,76,0.25)", fontSize: 18, fontStyle: "italic", marginBottom: 8 }}>
-            Enter a hand and action history
-          </p>
-          <p style={{ color: "rgba(201,168,76,0.12)", fontSize: 13 }}>
-            The solver returns its learned strategy distribution
-          </p>
-        </div>
-      )}
+        )}
+
+        {!data && !loading && !error && (
+          <div className="flex flex-col items-center justify-center py-28 animate-fade-up-2">
+            <div style={{
+              width: 80, height: 80, borderRadius: 99, marginBottom: 32,
+              border: "1px solid rgba(201,168,76,0.08)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "radial-gradient(circle, rgba(201,168,76,0.03), transparent)",
+            }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 99,
+                border: "1px solid rgba(201,168,76,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 0 24px rgba(201,168,76,0.05)",
+              }}>
+                <div style={{ width: 6, height: 6, borderRadius: 99, background: "rgba(201,168,76,0.3)" }} />
+              </div>
+            </div>
+            <p style={{ color: "rgba(201,168,76,0.25)", fontSize: 18, fontStyle: "italic", marginBottom: 8, fontFamily: "var(--font-serif), serif" }}>
+              Enter a hand and action history
+            </p>
+            <p style={{ color: "rgba(201,168,76,0.12)", fontSize: 13 }}>
+              The solver returns its learned strategy distribution
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="inner-footer">
+        <span className="inner-footer-wordmark">R<span className="one">1</span>VER</span>
+        <span>Thomas Ou · MMXXVI</span>
+        <span className="inner-footer-links">
+          <a href="https://thomasou.com" target="_blank" rel="noopener noreferrer">thomasou.com</a>
+          <a href="https://github.com/Smokeybear10" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://www.linkedin.com/in/thomasou0/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </span>
+      </footer>
     </div>
   )
 }

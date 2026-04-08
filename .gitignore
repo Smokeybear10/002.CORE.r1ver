@@ -15,8 +15,6 @@
 *.gif
 *.sh
 
-react/.next/
-react/build/
-react/dist/
-react/node_modules/
+web/.next/
+web/node_modules/
 .gstack/

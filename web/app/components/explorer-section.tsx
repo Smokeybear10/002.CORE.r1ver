@@ -174,20 +174,20 @@ export function ExplorerSection() {
   return (
     <section className="explorer-section" id="explorer">
       <div className="explorer-inner">
-        <div className="section-header reveal-group">
-          <div className="section-label reveal-child">§ 04 · Explorer</div>
-          <SplitText as="h2" className="section-title" delay={0.15}>
-            Pick a hand. <span className="em">Watch it compute.</span>
-          </SplitText>
-          <p className="section-sub reveal-child">
-            Select two cards for your pocket, then three for the flop. The
-            solver reveals equity, cluster membership, and the five nearest
-            neighbors in abstraction space.
-          </p>
-        </div>
-
         <div className="explorer-layout reveal">
           <div>
+            <div className="section-header reveal-group" style={{ marginBottom: 48 }}>
+              <div className="section-label reveal-child">§ 04 · Explorer</div>
+              <SplitText as="h2" className="section-title" delay={0.15}>
+                Pick a hand. <span className="em">Watch it compute.</span>
+              </SplitText>
+              <p className="section-sub reveal-child">
+                Select two cards for your pocket, then three for the flop. The
+                solver reveals equity, cluster membership, and the five nearest
+                neighbors in abstraction space.
+              </p>
+            </div>
+
             <div className="card-grid-header">
               <span className="card-grid-label">Card Selector</span>
               <span className="card-grid-count">

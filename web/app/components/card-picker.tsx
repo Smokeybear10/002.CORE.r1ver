@@ -29,7 +29,7 @@ function MiniCard({ card, empty, onClick }: { card?: PickerCard; empty?: boolean
           ? "linear-gradient(145deg, #0f0f0f 0%, #080808 100%)"
           : "transparent",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "'Georgia', serif", fontSize: 15,
+        fontFamily: "var(--font-serif), serif", fontSize: 15,
         color: "#c9a84c", transition: "all 0.2s",
         cursor: card ? "pointer" : "default",
         boxShadow: card ? "0 4px 16px rgba(0,0,0,0.4)" : "none",
@@ -140,7 +140,7 @@ export function CardPicker({
                         : "rgba(201,168,76,0.06)"
                       : "transparent",
                     color: isSel ? "#c9a84c" : isFull ? "rgba(201,168,76,0.12)" : "rgba(201,168,76,0.38)",
-                    fontSize: 12, fontFamily: "'Georgia', serif",
+                    fontSize: 12, fontFamily: "var(--font-serif), serif",
                     cursor: isFull ? "default" : "pointer",
                     transition: "all 0.15s",
                     display: "flex", alignItems: "center", justifyContent: "center",

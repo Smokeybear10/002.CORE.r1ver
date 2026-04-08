@@ -1,129 +1,120 @@
-R1VER
-===========================
+# R1VER | Poker Intelligence
 
-`r1ver` is a Rust library to play, learn, analyze, track, and solve No-Limit Texas Hold'em.
+A Rust solver and Next.js frontend for No-Limit Texas Hold'em, seeking functional parity with Pluribus — the first superhuman agent in multiplayer poker.
 
-# Overview
+## What It Does
 
-This started as a simple Rust project before evolving into a state-of-the-art poker solver and analysis tool seeking functional parity with Pluribus<sup>1</sup>, the first superhuman agent in multiplayer No Limit Texas Hold'em.
+R1VER trains a game-theoretic poker solver from scratch: exhaustive hand abstraction, hierarchical clustering, Earth Mover's Distance metrics, and Monte Carlo Counterfactual Regret Minimization. The result is a blueprint strategy that can be queried in real time through an API and interactive frontend.
+
 <table align="center">
 <tr>
 <td align="center">
-    <img src="https://github.com/user-attachments/assets/5118eba3-3d64-42f8-ac07-5c83ff733439" height="200" alt="Training Progress"/>
+    <img src="https://github.com/user-attachments/assets/5118eba3-3d64-42f8-ac07-5c83ff733439" height="200" alt="Monte Carlo Tree Search"/>
     <br>
     <em>Monte Carlo Tree Search</em>
 </td>
 <td align="center">
-    <img src="https://github.com/user-attachments/assets/90b491df-9482-483e-9475-4360f5a17add" height="200" alt="Strategy Growth"/>
+    <img src="https://github.com/user-attachments/assets/90b491df-9482-483e-9475-4360f5a17add" height="200" alt="Equity Distributions"/>
     <br>
     <em>Equity Distributions</em>
 </td>
 </tr>
 </table>
 
-The guiding philosophy of this crate is to use very precise struct and trait abstractions to represent the rules, mechanics, and strategies of NLHE. Every module is modeled as closely as possible to its real-world analogue, while also utilizing clever representations and transformations to be as memory- and compute-efficient as possible. We lean heavily into idiomatic Rust by using lazy functional patterns, efficient data structure representations, infallible type conversions, thread-safe multi-processing, and strictly safe code.
+## Quick Start
 
-The intended use case is a one-time resource-intensive training run that will save information abstractions, k-means clusters, distance metrics, and blueprint profiles to disk for use in later runs or analyses. To generate these datasets under arbitrary parametrization, the program will iterate through the following steps:
+```bash
+# Solver (Rust)
+cargo build
+cargo run
 
-1. For each layer of hierarchical abstraction (`preflop`, `flop`, `turn`, `river`):
-   - Generate isomorphic hand clusters by exhaustively iterating through strategically equivalent situations
-   - Initialize k-means centroids using k-means++ seeding over abstract distribution space<sup>2</sup>
-   - Run hierarchical k-means clustering to group hands into strategically similar situations
-   - Calculate Earth Mover's Distance metrics via optimal transport<sup>5</sup> between all cluster pairs
-   - Save abstraction results and distance metrics to disk
+# Frontend (Next.js)
+cd web
+npm install
+npm run dev          # localhost:2002
+```
 
-2. Run iterative Monte Carlo CFR training<sup>3</sup>:
-   - Initialize regret tables and strategy profiles
-   - Sample game trajectories using external sampling MCCFR
-   - Update regret values and compute counterfactual values
-   - Accumulate strategy updates with linear weighting
-   - Periodically checkpoint blueprint strategy to disk
-   - Continue until convergence criteria met
+The frontend expects the Rust API at `localhost:3002` (configurable via `NEXT_PUBLIC_API_URL`).
 
-3. Perform real-time search during gameplay (in progress):
-   - Load pre-computed abstractions and blueprint strategy
-   - Use depth-limited subgame solving with blueprint as prior
-   - Dynamically build local game trees
-   - Run targeted Monte Carlo rollouts
-   - Return optimal actions within time constraints
+## Tech Stack
 
-# System Requirements
+| Layer       | Tools                                              |
+|-------------|----------------------------------------------------|
+| Solver      | Rust, Rayon, Petgraph, Tokio                       |
+| API         | Actix Web, PostgreSQL, tokio-postgres               |
+| Frontend    | Next.js 16, React 19, Tailwind 4, GSAP             |
+| CI          | GitHub Actions (build, test, bench)                 |
 
-The abstraction and counterfactual regret minimization algorithms are quite resource intensive.
-- Hierarchical k-means requires holding all strategically isomorphic observations at a given street, as well as their projected distributions onto their future streets.
-- Monte Carlo CFR requires sampling game trees with full game state information and accumulating regret and policy information
+## Project Structure
 
-| Street     | Abstraction Size  | Metric Size |
-|------------|-------------------|-------------|
-| Preflop    |          4 KB     | 301 KB      |
-| Flop       |         32 MB     | 175 KB      |
-| Turn       |        347 MB     | 175 KB      |
-| River      |       3.02 GB     | -           | 
+```
+R1VER/
+├── src/
+│   ├── cards/          # Hand evaluation, equity, isomorphisms, iterators
+│   ├── clustering/     # K-means, EMD, Sinkhorn, histogram abstraction
+│   ├── gameplay/       # Game engine, actions, settlements, showdowns
+│   ├── mccfr/          # Monte Carlo CFR solver, blueprint convergence
+│   ├── transport/      # Optimal transport, Wasserstein distance
+│   ├── analysis/       # API server, CLI, SQL queries
+│   ├── players/        # Human player interface
+│   ├── save/           # Disk persistence, Postgres binary format
+│   └── search/         # Real-time subgame solving (in progress)
+├── web/
+│   └── app/
+│       ├── components/ # Landing page sections, card picker, charts
+│       ├── lib/        # API client, card utilities
+│       ├── explorer/   # Hand explorer — equity, clusters, neighbors
+│       └── strategy/   # Strategy viewer — blueprint query interface
+├── benches/            # Criterion benchmarks
+├── pgcopy/             # Pre-computed Postgres binary data files
+└── Cargo.toml
+```
 
-# Modules
+## Training Pipeline
 
-## `cards`
+1. **Abstraction** — Exhaustively iterate 3.1T isomorphic situations per street, project equity distributions, cluster with hierarchical k-means
+2. **Metrics** — Compute Earth Mover's Distance between all cluster pairs via Sinkhorn optimal transport
+3. **Solve** — External sampling MCCFR with linear strategy weighting and regret-based pruning
+4. **Search** — Depth-limited subgame solving with the blueprint as prior (in progress)
 
-Core functionality for working with standard playing cards and Texas Hold'em rules:
+### Data Sizes
 
-- **Hand Evaluation**: Nanosecond hand strength calculation using lazy evaluation; fastest open-source hand evaluation algorithm; benchmarks outperform the popular Cactus Kev implementation
-- **Equity Calculation**: Fast equity calculations between ranges of hands, supporting both exact enumeration and Monte Carlo simulation
-- **Exhaustive Iteration**: Efficient iteration over cards, hands, decks, and private-public observations with lazy bitwise advancing
-- **Distribution Analysis**: Tools for analyzing equity distributions and range vs range scenarios
-- **Short Deck Support**: Full support for 36-card short deck variant with adjusted hand rankings and iterators
-- **Bijective Representations**: Multiple card representations `(u8/u16/u32/u64)` allow for maximally efficient operations and transformations
+| Street  | Abstraction | Metric |
+|---------|-------------|--------|
+| Preflop | 4 KB        | 301 KB |
+| Flop    | 32 MB       | 175 KB |
+| Turn    | 347 MB      | 175 KB |
+| River   | 3.02 GB     | —      |
 
-## `gameplay`
+## Modules
 
-A complete poker game engine implementation:
+**cards** — Nanosecond hand evaluation via lazy bitwise operations. Fastest open-source evaluator, outperforming Cactus Kev. Supports exact equity enumeration, Monte Carlo simulation, full isomorphism iteration, short deck variant, and bijective u8/u16/u32/u64 representations.
 
-- **Standard Rules**: Full implementation of No-Limit Texas Hold'em rules and mechanics
-- **Complex Showdowns**: Elegant handling and thorough testing of showdown edge cases like side pots, all-ins, dead cards, and multi-way ties
-- **Flexible Payout Logic**: Configurable payout structures for different game formats
-- **Decider Abstraction**: Generic trait system for implementing different player decision strategies
-- **Functional Design**: Clean Node/Edge/Tree implementation for game state representation
+**clustering** — Plays out every possible situation respecting suit/rank symmetries. Hierarchical k-means over distribution space with Earth Mover's Distance. Sinkhorn-regularized optimal transport for efficient distance computation.
 
-## `clustering`
+**gameplay** — Complete NLHE game engine with side pots, all-ins, multi-way ties, and configurable payout structures. Clean Node/Edge/Tree representation with a generic Decider trait for pluggable player strategies.
 
-Advanced clustering capabilities for poker hand analysis:
+**mccfr** — External sampling MCCFR with dynamic tree construction, linear strategy weighting, and discount schemes. Validated on Rock-Paper-Scissors before scaling to full NLHE.
 
-- **Isomorphic Exhaustion**: Plays out *every one of 3.1T* possible situations by respecting symmetries and enforcing permutation invariance<sup>4</sup>
-- **Earth Mover's Distance (EMD)**: Implementation of EMD metric for comparing hand distributions over equity and hierarchical abstraction clusters
-- **Hierarchical K-means**: Multi-level clustering algorithm for creating strategic abstractions from bottom-up distribution clustering 
-- **Optimal Transport**: High level abstractions for calculating Wasserstein distance between two arbitrary distributions supported over a joint metric space
-- **Persistence**: Efficient serialization and deserialization of clustering results to/from disk using Postgres binary formats
+**transport** — Wasserstein distance computation via greedy coupling and Greenkhorn/Sinkhorn algorithms. Supports arbitrary distributions over joint metric spaces.
 
-## `mccfr`
+**analysis** — Actix Web API server backed by PostgreSQL. Uploads Postgres binary files with indexing for fast lookups across abstractions, metrics, and blueprint strategies.
 
-Monte Carlo Counterfactual Regret Minimization solver:
+## References
 
-- **Blueprint Convergence**: Previously demonstrated convergence on Rock-Paper-Scissors as validation
-- **External Sampling**: Implementation of external sampling MCCFR variant
-- **Dynamic Tree Building**: On-the-fly game tree construction for memory efficiency
-- **Linear Strategy Weighting**: Efficient strategy updates using iterative weighting and discount schemes<sup>5</sup>
-- **Persistence**: Efficient serialization and deserialization of blueprint results to/from disk using Postgres binary formats
+1. Superhuman AI for multiplayer poker (2019) — [Science](https://science.sciencemag.org/content/early/2019/07/10/science.aay2400)
+2. Potential-Aware Imperfect-Recall Abstraction with EMD (2014) — [AAAI](http://www.cs.cmu.edu/~sandholm/potential-aware_imperfect-recall.aaai14.pdf)
+3. Regret Minimization in Games with Incomplete Information (2007) — [NIPS](https://papers.nips.cc/paper/3306-regret-minimization-in-games-with-incomplete-information)
+4. A Fast and Optimal Hand Isomorphism Algorithm (2013) — [AAAI](https://www.cs.cmu.edu/~waugh/publications/isomorphism13.pdf)
+5. Near-linear Time Approximation for Optimal Transport via Sinkhorn (2018) — [NIPS](https://arxiv.org/abs/1705.09634)
+6. Solving Imperfect-Information Games via Discounted Regret Minimization (2019) — [AAAI](https://arxiv.org/pdf/1809.04040.pdf)
+7. Action Translation in Extensive-Form Games (2013) — [IJCAI](http://www.cs.cmu.edu/~sandholm/reverse%20mapping.ijcai13.pdf)
+8. Discretization of Continuous Action Spaces (2015) — [AAMAS](http://www.cs.cmu.edu/~sandholm/discretization.aamas15.fromACM.pdf)
+9. Regret-Based Pruning in Extensive-Form Games (2015) — [NIPS](http://www.cs.cmu.edu/~sandholm/regret-basedPruning.nips15.withAppendix.pdf)
+10. Depth-Limited Solving for Imperfect-Information Games (2018) — [NeurIPS](https://arxiv.org/pdf/1805.08195.pdf)
+11. Reduced Space and Faster Convergence via Pruning (2017) — [ICML](http://www.cs.cmu.edu/~sandholm/reducedSpace.icml17.pdf)
+12. Safe and Nested Subgame Solving (2017) — [NIPS](https://www.cs.cmu.edu/~noamb/papers/17-NIPS-Safe.pdf)
 
-## `analysis`
+---
 
-Tools for analyzing and querying results yielded from our training pipeline using PostgreSQL.
-
-- **Data Upload**: Copies Postgres binary files into a database with extensive indexing for efficient lookups.
-- **SQL Optimization**: Enables querying all isomorphisms, abstractions, EMD metrics, potential distributions, and blueprint strategies learned during prior training steps.
-- **CLI Tool**: A command-line interface to perform basic queries, such as equity and distance calculations.
-- **Server Struct**: Actix web instance serving HTTP requests to support an analysis frontend client (coming soon).
-
-# References
-
-1. (2019). Superhuman AI for multiplayer poker. [(Science)](https://science.sciencemag.org/content/early/2019/07/10/science.aay2400)
-2. (2014). Potential-Aware Imperfect-Recall Abstraction with Earth Mover's Distance in Imperfect-Information Games. [(AAAI)](http://www.cs.cmu.edu/~sandholm/potential-aware_imperfect-recall.aaai14.pdf)
-3. (2007). Regret Minimization in Games with Incomplete Information. [(NIPS)](https://papers.nips.cc/paper/3306-regret-minimization-in-games-with-incomplete-information)
-4. (2013). A Fast and Optimal Hand Isomorphism Algorithm. [(AAAI)](https://www.cs.cmu.edu/~waugh/publications/isomorphism13.pdf)
-5. (2018). Near-linear time approximation algorithms for optimal transport via Sinkhorn iteration. [(NIPS)](https://arxiv.org/abs/1705.09634)
-6. (2019). Solving Imperfect-Information Games via Discounted Regret Minimization. [(AAAI)](https://arxiv.org/pdf/1809.04040.pdf)
-7. (2013). Action Translation in Extensive-Form Games with Large Action Spaces: Axioms, Paradoxes, and the Pseudo-Harmonic Mapping. [(IJCAI)](http://www.cs.cmu.edu/~sandholm/reverse%20mapping.ijcai13.pdf)
-8. (2015). Discretization of Continuous Action Spaces in Extensive-Form Games. [(AAMAS)](http://www.cs.cmu.edu/~sandholm/discretization.aamas15.fromACM.pdf)
-9. (2015). Regret-Based Pruning in Extensive-Form Games. [(NIPS)](http://www.cs.cmu.edu/~sandholm/regret-basedPruning.nips15.withAppendix.pdf)
-10. (2018). Depth-Limited Solving for Imperfect-Information Games. [(NeurIPS)](https://arxiv.org/pdf/1805.08195.pdf)
-11. (2017). Reduced Space and Faster Convergence in Imperfect-Information Games via Pruning. [(ICML)](http://www.cs.cmu.edu/~sandholm/reducedSpace.icml17.pdf)
-12. (2017). Safe and Nested Subgame Solving for Imperfect-Information Games. [(NIPS)](https://www.cs.cmu.edu/~noamb/papers/17-NIPS-Safe.pdf)
-# FORMATT
+Built by Thomas Ou
