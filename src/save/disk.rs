@@ -16,16 +16,21 @@ pub trait Disk {
     fn save(&self);
     /// path to file on disk, which will exist after this is called
     fn path(street: Street) -> std::path::PathBuf {
+        #[cfg(feature = "demo")]
+        let subdir = "pgcopy/demo";
+        #[cfg(not(feature = "demo"))]
+        let subdir = "pgcopy";
         let ref path = format!(
-            "{}/pgcopy/{}.{}",
+            "{}/{}/{}.{}",
             std::env::current_dir()
                 .unwrap_or_default()
                 .to_string_lossy()
                 .into_owned(),
+            subdir,
             Self::name(),
             street
         );
-        std::path::Path::new(path).parent().map(std::fs::create_dir);
+        std::path::Path::new(path).parent().map(std::fs::create_dir_all);
         std::path::PathBuf::from(path)
     }
     /// check if file exists on disk

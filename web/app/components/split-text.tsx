@@ -31,52 +31,52 @@ export function SplitText({
     const el = ref.current
     if (!el) return
 
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-    const textNodes: Text[] = []
-    while (walker.nextNode()) textNodes.push(walker.currentNode as Text)
+    const ctx = gsap.context(() => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+      const textNodes: Text[] = []
+      while (walker.nextNode()) textNodes.push(walker.currentNode as Text)
 
-    const inners: HTMLElement[] = []
-    for (const node of textNodes) {
-      const parts = node.textContent?.split(/(\s+)/) ?? []
-      const frag = document.createDocumentFragment()
-      for (const part of parts) {
-        if (!part) continue
-        if (/^\s+$/.test(part)) {
-          frag.appendChild(document.createTextNode(part))
-          continue
+      const inners: HTMLElement[] = []
+      for (const node of textNodes) {
+        const parts = node.textContent?.split(/(\s+)/) ?? []
+        const frag = document.createDocumentFragment()
+        for (const part of parts) {
+          if (!part) continue
+          if (/^\s+$/.test(part)) {
+            frag.appendChild(document.createTextNode(part))
+            continue
+          }
+          const outer = document.createElement("span")
+          outer.style.cssText =
+            "overflow:hidden;display:inline-block;vertical-align:top;padding-bottom:0.1em"
+          const inner = document.createElement("span")
+          inner.style.cssText = "display:inline-block;will-change:transform"
+          inner.textContent = part
+          outer.appendChild(inner)
+          frag.appendChild(outer)
+          inners.push(inner)
         }
-        const outer = document.createElement("span")
-        outer.style.cssText =
-          "overflow:hidden;display:inline-block;vertical-align:top;padding-bottom:0.1em"
-        const inner = document.createElement("span")
-        inner.style.cssText = "display:inline-block;will-change:transform"
-        inner.textContent = part
-        outer.appendChild(inner)
-        frag.appendChild(outer)
-        inners.push(inner)
+        node.parentNode?.replaceChild(frag, node)
       }
-      node.parentNode?.replaceChild(frag, node)
-    }
 
-    gsap.set(inners, { yPercent: 110, opacity: 0 })
+      gsap.set(inners, { yPercent: 110, opacity: 0 })
 
-    const anim = gsap.to(inners, {
-      yPercent: 0,
-      opacity: 1,
-      duration,
-      stagger,
-      delay,
-      ease: "power4.out",
-      scrollTrigger: {
-        trigger: el,
-        start: triggerStart,
-        toggleActions: "play none none none",
-      },
-    })
+      gsap.to(inners, {
+        yPercent: 0,
+        opacity: 1,
+        duration,
+        stagger,
+        delay,
+        ease: "power4.out",
+        scrollTrigger: {
+          trigger: el,
+          start: triggerStart,
+          toggleActions: "play none none none",
+        },
+      })
+    }, el)
 
-    return () => {
-      anim.kill()
-    }
+    return () => ctx.revert()
   }, [triggerStart, stagger, delay, duration])
 
   return (

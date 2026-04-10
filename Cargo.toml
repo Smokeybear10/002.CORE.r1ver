@@ -80,5 +80,8 @@ trainer  = ["native"]
 publish  = ["native"]
 analyze  = ["native"]
 
+# Small-scale demo (fast clustering + training, separate pgcopy/demo/ output)
+demo     = ["native"]
+
 # Optional game variants
 shortdeck = []

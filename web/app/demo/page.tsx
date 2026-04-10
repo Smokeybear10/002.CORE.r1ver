@@ -16,11 +16,12 @@ const NEIGHBORS: Sample[] = [
   { obs: "AdKc~7s8h2d", abs: "F::3c", equity: 0.68, density: 0.0142, distance: 0.0134 },
 ]
 
+const sr = (i: number) => Math.abs(Math.sin(i * 127.1 + 311.7))
 const HISTOGRAM: Sample[] = Array.from({ length: 36 }, (_, i) => ({
   obs: "",
   abs: `F::${i.toString(16)}`,
   equity: i / 35,
-  density: Math.random() * 0.05 + (i > 12 && i < 24 ? 0.04 : 0.01),
+  density: sr(i) * 0.05 + (i > 12 && i < 24 ? 0.04 : 0.01),
   distance: 0,
 }))
 

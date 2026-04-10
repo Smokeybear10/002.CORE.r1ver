@@ -10,9 +10,10 @@ const DECISIONS = [
   { edge: "F", label: "Fold", mass: 0.12 },
   { edge: "O", label: "Check", mass: 0.08 },
 ]
+const sr = (i: number) => Math.abs(Math.sin(i * 127.1 + 311.7))
 const HISTOGRAM = Array.from({ length: 30 }, (_, i) => ({
   equity: i / 29,
-  density: Math.random() * 0.05 + (i > 10 && i < 20 ? 0.04 : 0.01),
+  density: sr(i) * 0.05 + (i > 10 && i < 20 ? 0.04 : 0.01),
 }))
 
 function Card({ rank, suit }: { rank: string; suit: string }) {

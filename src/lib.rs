@@ -45,11 +45,30 @@ const SINKHORN_ITERATIONS: usize = 128;
 const SINKHORN_TOLERANCE: Energy = 0.001;
 
 // kmeans clustering parameters
+#[cfg(not(feature = "demo"))]
 const KMEANS_FLOP_TRAINING_ITERATIONS: usize = 20;
+#[cfg(feature = "demo")]
+const KMEANS_FLOP_TRAINING_ITERATIONS: usize = 3;
+
+#[cfg(not(feature = "demo"))]
 const KMEANS_TURN_TRAINING_ITERATIONS: usize = 24;
+#[cfg(feature = "demo")]
+const KMEANS_TURN_TRAINING_ITERATIONS: usize = 3;
+
+#[cfg(not(feature = "demo"))]
 const KMEANS_FLOP_CLUSTER_COUNT: usize = 128;
+#[cfg(feature = "demo")]
+const KMEANS_FLOP_CLUSTER_COUNT: usize = 8;
+
+#[cfg(not(feature = "demo"))]
 const KMEANS_TURN_CLUSTER_COUNT: usize = 144;
+#[cfg(feature = "demo")]
+const KMEANS_TURN_CLUSTER_COUNT: usize = 8;
+
+#[cfg(not(feature = "demo"))]
 const KMEANS_EQTY_CLUSTER_COUNT: usize = 101;
+#[cfg(feature = "demo")]
+const KMEANS_EQTY_CLUSTER_COUNT: usize = 8;
 
 /// rps mccfr parameteres
 const ASYMMETRIC_UTILITY: f32 = 2.0;
@@ -58,7 +77,10 @@ const CFR_TREE_COUNT_RPS: usize = 8192;
 
 // nlhe mccfr parameters
 const CFR_BATCH_SIZE_NLHE: usize = 128;
-const CFR_TREE_COUNT_NLHE: usize = 0x10000000;
+#[cfg(not(feature = "demo"))]
+const CFR_TREE_COUNT_NLHE: usize = 0x10000000; // 268M trees
+#[cfg(feature = "demo")]
+const CFR_TREE_COUNT_NLHE: usize = 0x10000; // 65K trees
 
 /// profile average sampling parameters
 const SAMPLING_THRESHOLD: Entropy = 1.0;
