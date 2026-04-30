@@ -32,7 +32,11 @@ impl Writer {
         postgres.upload::<Metric>().await?;
         postgres.upload::<Decomp>().await?;
         postgres.upload::<Encoder>().await?;
-        postgres.upload::<Profile>().await?;
+        if std::path::Path::new("pgcopy/blueprint").exists() {
+            postgres.upload::<Profile>().await?;
+        } else {
+            log::info!("skipping blueprint upload (pgcopy/blueprint missing — run trainer first)");
+        }
         postgres.derive::<Abstraction>().await?;
         postgres.derive::<Street>().await?;
         postgres.0.batch_execute("VACUUM ANALYZE;").await?;

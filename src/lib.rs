@@ -153,7 +153,15 @@ pub fn kys() {
     tokio::spawn(async move {
         tokio::signal::ctrl_c().await.unwrap();
         println!();
-        log::warn!("violent interrupt received, exiting immediately");
+        if INTERRUPTED.load(std::sync::atomic::Ordering::Relaxed) {
+            log::warn!("second interrupt received, exiting immediately");
+            std::process::exit(0);
+        }
+        log::warn!("interrupt received, finishing current batch... (press again to force)");
+        INTERRUPTED.store(true, std::sync::atomic::Ordering::Relaxed);
+        tokio::signal::ctrl_c().await.unwrap();
+        println!();
+        log::warn!("second interrupt received, exiting immediately");
         std::process::exit(0);
     });
 }

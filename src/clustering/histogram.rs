@@ -34,6 +34,14 @@ impl Histogram {
     pub fn n(&self) -> usize {
         self.counts.len()
     }
+    /// total sample count (sum of weights). exposed for checkpoint serialization.
+    pub fn mass(&self) -> usize {
+        self.mass
+    }
+    /// raw (abstraction, count) pairs. exposed for checkpoint serialization.
+    pub fn counts(&self) -> &BTreeMap<Abstraction, usize> {
+        &self.counts
+    }
 
     /// insert the Abstraction into our support,
     /// incrementing its local weight,

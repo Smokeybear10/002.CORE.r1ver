@@ -1,3 +1,6 @@
+pub mod checkpoint;
+pub use checkpoint::*;
+
 pub mod emd;
 pub use emd::*;
 

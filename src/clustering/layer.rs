@@ -1,3 +1,4 @@
+use super::checkpoint::Checkpoint;
 use super::histogram::Histogram;
 use super::lookup::Lookup;
 use super::metric::Metric;
@@ -33,36 +34,101 @@ impl Layer {
     /// writing to disk in pgcopy
     pub fn learn() {
         use crate::save::disk::Disk;
+        use std::sync::atomic::Ordering;
         Street::all()
             .into_iter()
             .rev()
             .filter(|&&s| Self::done(s))
             .for_each(|s| log::info!("{:<32}{:<16}{:<32}", "using kmeans layer", s, Self::name()));
-        Street::all()
-            .into_iter()
-            .rev()
-            .filter(|&&s| !Self::done(s))
-            .map(|&s| Self::grow(s).save())
-            .count();
+        for &s in Street::all().into_iter().rev() {
+            if Self::done(s) {
+                continue;
+            }
+            let layer = Self::grow(s);
+            if crate::INTERRUPTED.load(Ordering::Relaxed) {
+                log::warn!(
+                    "interrupted during {}; checkpoint retained, skipping final save",
+                    s
+                );
+                return;
+            }
+            layer.save();
+            Checkpoint::delete(s);
+        }
     }
 
     /// primary clustering algorithm loop
     fn cluster(mut self) -> Self {
-        log::info!("{:<32}{:<32}", "initialize  kmeans", self.street());
-        let ref mut init = self.init();
-        let ref mut last = self.kmeans;
-        std::mem::swap(init, last);
-        log::info!("{:<32}{:<32}", "clustering  kmeans", self.street());
+        use std::sync::atomic::Ordering;
         let t = self.street().t();
+        let (mut start, centroids) = match Checkpoint::load(self.street()) {
+            Some((i, hs)) if (i as usize) <= t && hs.len() == self.street().k() => {
+                log::info!(
+                    "{:<32}{:<32}resuming at iter {}/{}",
+                    "loaded      checkpoint",
+                    self.street(),
+                    i,
+                    t
+                );
+                (i as usize, hs)
+            }
+            _ => {
+                log::info!("{:<32}{:<32}", "initialize  kmeans", self.street());
+                let init = self.init();
+                if self.street().t() > 0 {
+                    Checkpoint::save(self.street(), 0, &init);
+                }
+                (0, init)
+            }
+        };
+        self.kmeans = centroids;
+        log::info!("{:<32}{:<32}", "clustering  kmeans", self.street());
         let progress = crate::progress(t);
-        for _ in 0..t {
+        progress.inc(start as u64);
+        while start < t {
+            if crate::INTERRUPTED.load(Ordering::Relaxed) {
+                log::warn!(
+                    "graceful interrupt at iter {}/{} ({}); checkpoint preserved",
+                    start,
+                    t,
+                    self.street()
+                );
+                progress.finish();
+                println!();
+                return self;
+            }
             let ref mut next = self.next();
             let ref mut last = self.kmeans;
             std::mem::swap(next, last);
+            start += 1;
+            Checkpoint::save(self.street(), start as u32, &self.kmeans);
             progress.inc(1);
         }
         progress.finish();
         println!();
+        // repair any empty centroids before metric calculation
+        {
+            use rand::rngs::SmallRng;
+            use rand::seq::IndexedRandom;
+            use rand::SeedableRng;
+            let replacements: Vec<(usize, Histogram)> = self
+                .kmeans
+                .iter()
+                .enumerate()
+                .filter(|(_, c)| c.mass() == 0)
+                .map(|(i, _)| {
+                    let point = self
+                        .points()
+                        .choose(&mut SmallRng::seed_from_u64(i as u64))
+                        .expect("non-empty points")
+                        .clone();
+                    (i, point)
+                })
+                .collect();
+            for (i, point) in replacements {
+                self.kmeans[i].absorb(&point);
+            }
+        }
         self
     }
 
@@ -108,7 +174,7 @@ impl Layer {
             potentials = self
                 .points()
                 .par_iter()
-                .map(|h| self.emd(x, h))
+                .map(|h| self.fast_emd(x, h))
                 .map(|p| p * p)
                 .inspect(|_| progress.inc(1))
                 .collect::<Vec<Energy>>()
@@ -144,6 +210,28 @@ impl Layer {
                 .get_mut(neighbor)
                 .expect("index from neighbor calculation")
                 .absorb(point);
+        }
+        // reinitialize empty centroids — can occur when fast_emd shifts all points away
+        {
+            use rand::rngs::SmallRng;
+            use rand::seq::IndexedRandom;
+            use rand::SeedableRng;
+            let replacements: Vec<(usize, Histogram)> = centroids
+                .iter()
+                .enumerate()
+                .filter(|(_, c)| c.mass() == 0)
+                .map(|(i, _)| {
+                    let point = self
+                        .points()
+                        .choose(&mut SmallRng::seed_from_u64(i as u64))
+                        .expect("non-empty points")
+                        .clone();
+                    (i, point)
+                })
+                .collect();
+            for (i, point) in replacements {
+                centroids[i].absorb(&point);
+            }
         }
         log::debug!(
             "{:<32}{:<32}",
@@ -181,6 +269,10 @@ impl Layer {
     fn emd(&self, x: &Histogram, y: &Histogram) -> Energy {
         self.metric.emd(x, y)
     }
+    /// fast assignment distance: expected distance O(Sp × Sc), no Sinkhorn iterations
+    fn fast_emd(&self, x: &Histogram, y: &Histogram) -> Energy {
+        self.metric.expected(x, y)
+    }
     /// because we have fixed-order Abstractions that are determined by
     /// street and K-index, we should encapsulate the self.street depenency
     fn abstraction(&self, i: usize) -> Abstraction {
@@ -191,7 +283,7 @@ impl Layer {
         self.kmeans()
             .iter()
             .enumerate()
-            .map(|(k, h)| (k, self.emd(x, h)))
+            .map(|(k, h)| (k, self.fast_emd(x, h)))
             .min_by(|(_, dx), (_, dy)| dx.partial_cmp(dy).unwrap())
             .expect("find nearest neighbor")
             .into()

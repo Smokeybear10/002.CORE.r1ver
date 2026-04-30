@@ -36,6 +36,13 @@ npm run dev          # localhost:2002
 
 The frontend expects the Rust API at `localhost:3002` (configurable via `NEXT_PUBLIC_API_URL`).
 
+## Architecture
+
+![R1VER Architecture](docs/architecture/r1ver-architecture.png)
+
+> The four streets of R1VER: **Abstract** → **Solve** → **Publish** → **Serve**.
+> Full interactive doc at [`docs/architecture/index.html`](docs/architecture/index.html).
+
 ## Tech Stack
 
 | Layer       | Tools                                              |

@@ -48,6 +48,18 @@ impl Metric {
         }
     }
 
+    pub fn expected(&self, source: &Histogram, target: &Histogram) -> Energy {
+        match source.peek() {
+            Abstraction::Learned(_) => source
+                .support()
+                .flat_map(|x| target.support().map(move |y| (x, y)))
+                .map(|(x, y)| source.density(x) * target.density(y) * self.distance(x, y))
+                .sum(),
+            Abstraction::Percent(_) => Equity::variation(source, target),
+            Abstraction::Preflop(_) => unreachable!("no preflop emd"),
+        }
+    }
+
     /// we're assuming tht the street is being generated AFTER the learned kmeans
     /// cluster distance calculation. so we should have (Street::K() choose 2)
     /// entreis in our abstraction pair lookup table.

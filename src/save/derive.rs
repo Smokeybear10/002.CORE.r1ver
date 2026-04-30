@@ -35,10 +35,12 @@ impl Derive for Abstraction {
             abs         BIGINT,
             street      SMALLINT,
             population  INTEGER,
-            equity      REAL
+            equity      REAL,
+            centrality  REAL DEFAULT 0
         );
         TRUNCATE TABLE abstraction;
         ALTER TABLE abstraction SET UNLOGGED;
+        ALTER TABLE abstraction ADD COLUMN IF NOT EXISTS centrality REAL DEFAULT 0;
 
         CREATE OR REPLACE FUNCTION get_population(xxx BIGINT) RETURNS INTEGER AS
         $$ BEGIN RETURN (SELECT COUNT(*) FROM isomorphism e WHERE e.abs = xxx); END; $$
@@ -108,7 +110,7 @@ impl Derive for Street {
         ALTER TABLE street SET UNLOGGED;
 
         CREATE OR REPLACE FUNCTION get_niso(s SMALLINT) RETURNS INTEGER AS
-        $$ BEGIN RETURN (SELECT COUNT(*) FROM isomorphism e WHERE e.street = s); END; $$
+        $$ BEGIN RETURN (SELECT COALESCE(SUM(population), 0)::INTEGER FROM abstraction WHERE street = s); END; $$
         LANGUAGE plpgsql;
 
         CREATE OR REPLACE FUNCTION get_nabs(s SMALLINT) RETURNS INTEGER AS
@@ -128,9 +130,9 @@ impl Derive for Street {
                 street,
                 nobs,
                 nabs
-            ) VALUES (  ({}),
-                get_niso({}),
-                get_nabs({})
+            ) VALUES (  ({}::SMALLINT),
+                get_niso({}::SMALLINT),
+                get_nabs({}::SMALLINT)
             );",
             street, street, street
         )
