@@ -1,25 +1,6 @@
 # R1VER | Poker Intelligence
 
-A Rust solver and Next.js frontend for No-Limit Texas Hold'em, seeking functional parity with Pluribus — the first superhuman agent in multiplayer poker.
-
-## What It Does
-
-R1VER trains a game-theoretic poker solver from scratch: exhaustive hand abstraction, hierarchical clustering, Earth Mover's Distance metrics, and Monte Carlo Counterfactual Regret Minimization. The result is a blueprint strategy that can be queried in real time through an API and interactive frontend.
-
-<table align="center">
-<tr>
-<td align="center">
-    <img src="https://github.com/user-attachments/assets/5118eba3-3d64-42f8-ac07-5c83ff733439" height="200" alt="Monte Carlo Tree Search"/>
-    <br>
-    <em>Monte Carlo Tree Search</em>
-</td>
-<td align="center">
-    <img src="https://github.com/user-attachments/assets/90b491df-9482-483e-9475-4360f5a17add" height="200" alt="Equity Distributions"/>
-    <br>
-    <em>Equity Distributions</em>
-</td>
-</tr>
-</table>
+A Rust solver and Next.js frontend for No-Limit Texas Hold'em, in functional parity with Pluribus — the first superhuman agent in multiplayer poker.
 
 ## Quick Start
 
@@ -36,53 +17,57 @@ npm run dev          # localhost:2002
 
 The frontend expects the Rust API at `localhost:3002` (configurable via `NEXT_PUBLIC_API_URL`).
 
+## What It Does
+
+Trains a game-theoretic poker solver from scratch. Collapses the ~10¹⁶⁰-node NLHE game tree by clustering 3.1T strategically-equivalent situations into 542 buckets using Earth Mover's Distance over equity distributions, then runs external-sampling MCCFR self-play to produce a blueprint Nash strategy. The result is queryable in real time through an Actix Web API and an interactive explorer.
+
 ## Architecture
 
 ![R1VER Architecture](docs/architecture/r1ver-architecture.png)
 
-> The four streets of R1VER: **Abstract** → **Solve** → **Publish** → **Serve**.
-> Full interactive doc at [`docs/architecture/index.html`](docs/architecture/index.html).
+The four streets of R1VER: **Abstract** → **Solve** → **Publish** → **Serve**. Full interactive doc at [`docs/architecture/index.html`](docs/architecture/index.html).
 
 ## Tech Stack
 
-| Layer       | Tools                                              |
-|-------------|----------------------------------------------------|
-| Solver      | Rust, Rayon, Petgraph, Tokio                       |
-| API         | Actix Web, PostgreSQL, tokio-postgres               |
-| Frontend    | Next.js 16, React 19, Tailwind 4, GSAP             |
-| CI          | GitHub Actions (build, test, bench)                 |
+| Layer    | Tools                                       |
+|----------|---------------------------------------------|
+| Solver   | Rust, Rayon, Petgraph, Tokio                |
+| API      | Actix Web, PostgreSQL, tokio-postgres       |
+| Frontend | Next.js 16, React 19, Tailwind 4, GSAP      |
+| CI       | GitHub Actions                              |
 
 ## Project Structure
 
 ```
 R1VER/
 ├── src/
-│   ├── cards/          # Hand evaluation, equity, isomorphisms, iterators
-│   ├── clustering/     # K-means, EMD, Sinkhorn, histogram abstraction
-│   ├── gameplay/       # Game engine, actions, settlements, showdowns
-│   ├── mccfr/          # Monte Carlo CFR solver, blueprint convergence
-│   ├── transport/      # Optimal transport, Wasserstein distance
-│   ├── analysis/       # API server, CLI, SQL queries
-│   ├── players/        # Human player interface
-│   ├── save/           # Disk persistence, Postgres binary format
-│   └── search/         # Real-time subgame solving (in progress)
+│   ├── cards/          Hand evaluation, equity, isomorphisms, iterators
+│   ├── clustering/     K-means, EMD, Sinkhorn, histogram abstraction
+│   ├── transport/      Optimal transport, Wasserstein distance
+│   ├── gameplay/       Game engine, actions, settlements, showdowns
+│   ├── mccfr/          Monte Carlo CFR solver, blueprint convergence
+│   ├── save/           Disk persistence, Postgres binary format
+│   ├── analysis/       API server, CLI, SQL queries
+│   ├── players/        Human player interface
+│   └── search/         Real-time subgame solving (in progress)
 ├── web/
 │   └── app/
-│       ├── components/ # Landing page sections, card picker, charts
-│       ├── lib/        # API client, card utilities
-│       ├── explorer/   # Hand explorer — equity, clusters, neighbors
-│       └── strategy/   # Strategy viewer — blueprint query interface
-├── benches/            # Criterion benchmarks
-├── pgcopy/             # Pre-computed Postgres binary data files
+│       ├── components/ Landing page sections, card picker, charts
+│       ├── lib/        API client, card utilities
+│       ├── explorer/   Hand explorer — equity, clusters, neighbors
+│       └── strategy/   Strategy viewer — blueprint query interface
+├── docs/architecture/  System architecture (SVG, JSX, PNG)
+├── pgcopy/             Pre-computed Postgres binary data
+├── benches/            Criterion benchmarks
 └── Cargo.toml
 ```
 
 ## Training Pipeline
 
-1. **Abstraction** — Exhaustively iterate 3.1T isomorphic situations per street, project equity distributions, cluster with hierarchical k-means
-2. **Metrics** — Compute Earth Mover's Distance between all cluster pairs via Sinkhorn optimal transport
-3. **Solve** — External sampling MCCFR with linear strategy weighting and regret-based pruning
-4. **Search** — Depth-limited subgame solving with the blueprint as prior (in progress)
+1. **Abstraction** — Exhaustively iterate 3.1T isomorphic situations per street, project equity distributions, cluster with hierarchical k-means.
+2. **Metrics** — Compute Earth Mover's Distance between all cluster pairs via Sinkhorn optimal transport.
+3. **Solve** — External-sampling MCCFR with linear strategy weighting and regret-based pruning.
+4. **Search** — Depth-limited subgame solving with the blueprint as prior (in progress).
 
 ### Data Sizes
 
@@ -95,21 +80,21 @@ R1VER/
 
 ## Modules
 
-**cards** — Nanosecond hand evaluation via lazy bitwise operations. Fastest open-source evaluator, outperforming Cactus Kev. Supports exact equity enumeration, Monte Carlo simulation, full isomorphism iteration, short deck variant, and bijective u8/u16/u32/u64 representations.
+**cards** — Nanosecond 7-card evaluator via lazy bitwise operations. Faster than Cactus Kev. Exact equity enumeration, Monte Carlo simulation, full isomorphism iteration, short-deck variant.
 
 **clustering** — Plays out every possible situation respecting suit/rank symmetries. Hierarchical k-means over distribution space with Earth Mover's Distance. Sinkhorn-regularized optimal transport for efficient distance computation.
 
-**gameplay** — Complete NLHE game engine with side pots, all-ins, multi-way ties, and configurable payout structures. Clean Node/Edge/Tree representation with a generic Decider trait for pluggable player strategies.
+**transport** — Wasserstein distance via greedy coupling and Greenkhorn/Sinkhorn. Supports arbitrary distributions over joint metric spaces.
 
-**mccfr** — External sampling MCCFR with dynamic tree construction, linear strategy weighting, and discount schemes. Validated on Rock-Paper-Scissors before scaling to full NLHE.
+**gameplay** — Complete NLHE engine: side pots, all-ins, multi-way ties, configurable payouts. Generic Node/Edge/Tree types and a pluggable Decider trait.
 
-**transport** — Wasserstein distance computation via greedy coupling and Greenkhorn/Sinkhorn algorithms. Supports arbitrary distributions over joint metric spaces.
+**mccfr** — External-sampling MCCFR with dynamic tree construction, linear strategy weighting, discount schemes. Validated on Rock-Paper-Scissors before scaling to full NLHE.
 
-**analysis** — Actix Web API server backed by PostgreSQL. Uploads Postgres binary files with indexing for fast lookups across abstractions, metrics, and blueprint strategies.
+**analysis** — Actix Web API backed by PostgreSQL. Streams Postgres binary files into indexed tables for sub-millisecond lookups across abstractions, metrics, and blueprint strategies.
 
 ## References
 
-1. Superhuman AI for multiplayer poker (2019) — [Science](https://science.sciencemag.org/content/early/2019/07/10/science.aay2400)
+1. Superhuman AI for Multiplayer Poker (2019) — [Science](https://science.sciencemag.org/content/early/2019/07/10/science.aay2400)
 2. Potential-Aware Imperfect-Recall Abstraction with EMD (2014) — [AAAI](http://www.cs.cmu.edu/~sandholm/potential-aware_imperfect-recall.aaai14.pdf)
 3. Regret Minimization in Games with Incomplete Information (2007) — [NIPS](https://papers.nips.cc/paper/3306-regret-minimization-in-games-with-incomplete-information)
 4. A Fast and Optimal Hand Isomorphism Algorithm (2013) — [AAAI](https://www.cs.cmu.edu/~waugh/publications/isomorphism13.pdf)
