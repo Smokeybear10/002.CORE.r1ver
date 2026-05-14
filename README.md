@@ -1,5 +1,7 @@
 # R1VER | Poker Intelligence
 
+**Live demo: [river-002.vercel.app](https://river-002.vercel.app)**
+
 A Rust solver and Next.js frontend for No-Limit Texas Hold'em, in functional parity with Pluribus — the first superhuman agent in multiplayer poker.
 
 ## Quick Start
