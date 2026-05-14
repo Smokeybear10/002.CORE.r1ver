@@ -255,7 +255,7 @@ export default function StrategyPage() {
       <div className="inner-main">
         {/* Header */}
         <div className="inner-header animate-fade-up">
-          <div className="inner-section-label">§ 05 · Strategy</div>
+          <div className="inner-section-label">R1VER | Strategy</div>
           <h1 className="inner-title">
             The solver&apos;s <span className="em">blueprint.</span>
           </h1>

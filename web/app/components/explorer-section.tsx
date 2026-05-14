@@ -177,7 +177,7 @@ export function ExplorerSection() {
         <div className="explorer-layout reveal">
           <div>
             <div className="section-header reveal-group" style={{ marginBottom: 48 }}>
-              <div className="section-label reveal-child">§ 04 · Explorer</div>
+              <div className="section-label reveal-child">R1VER | Explorer</div>
               <SplitText as="h2" className="section-title" delay={0.15}>
                 Pick a hand. <span className="em">Watch it compute.</span>
               </SplitText>

@@ -124,7 +124,7 @@ export default function ExplorerPage() {
       {!data && !loading && !error && (
         <main className="inner-main" style={{ maxWidth: 720, paddingTop: 120 }}>
           <div className="inner-header animate-fade-up">
-            <div className="inner-section-label">§ 04 · Explorer</div>
+            <div className="inner-section-label">R1VER | Explorer</div>
             <h1 className="inner-title">
               Hand <span className="em">Explorer</span>
             </h1>

@@ -9,11 +9,7 @@ export function ChapterSpace() {
             <ClusterCanvas />
           </div>
           <div className="reveal-group">
-            <div className="chapter-label reveal-child">
-              <span className="num">§ 03</span>
-              <span className="line" />
-              <span>Abstraction Space</span>
-            </div>
+            <div className="chapter-label reveal-child">R1VER | Abstraction Space</div>
             <h2 className="chapter-heading reveal-child">
               Two thousand <span className="em">archetypes.</span>
               <br />

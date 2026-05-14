@@ -111,7 +111,7 @@ export function StrategySection() {
     <section className="strategy-section" id="strategy">
       <div className="strategy-inner">
         <div className="section-header reveal-group">
-          <div className="section-label reveal-child">§ 05 · Strategy</div>
+          <div className="section-label reveal-child">R1VER | Strategy</div>
           <SplitText as="h2" className="section-title" delay={0.15}>
             The solver&apos;s <span className="em">blueprint.</span>
           </SplitText>

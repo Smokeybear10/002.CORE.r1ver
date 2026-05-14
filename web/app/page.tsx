@@ -29,7 +29,7 @@ export default function LandingPage() {
 
       <section className="query-section">
         <div className="query-inner reveal-group">
-          <div className="query-label reveal-child">§ 06 · Begin</div>
+          <div className="query-label reveal-child">R1VER | Begin</div>
           <SplitText as="h2" className="query-title" delay={0.15}>
             Ask the <span className="em">river.</span>
           </SplitText>

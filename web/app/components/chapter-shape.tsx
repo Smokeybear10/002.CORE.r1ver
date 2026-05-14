@@ -42,11 +42,7 @@ export function ChapterShape() {
       <div className="chapter-sticky">
         <div className="chapter-inner">
           <div className="reveal-group">
-            <div className="chapter-label reveal-child">
-              <span className="num">§ 02</span>
-              <span className="line" />
-              <span>The Shape of Equity</span>
-            </div>
+            <div className="chapter-label reveal-child">R1VER | The Shape of Equity</div>
             <h2 className="chapter-heading reveal-child">
               A cluster is <span className="em">not a number.</span>
               <br />
