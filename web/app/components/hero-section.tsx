@@ -57,7 +57,7 @@ export function HeroSection() {
       <div className="hero-sticky">
         <div className="hero-content">
           <div className="hero-phase" ref={phase1Ref}>
-            <div className="hero-eyebrow hero-enter hero-enter-1">— a solver you can watch think —</div>
+            <div className="hero-eyebrow hero-enter hero-enter-1">river | a solver you can watch think</div>
             <h1 className="hero-title hero-enter hero-enter-2">
               The river
               <br />
@@ -69,7 +69,7 @@ export function HeroSection() {
             </p>
           </div>
           <div className="hero-phase" ref={phase2Ref} style={{ opacity: 0 }}>
-            <div className="hero-eyebrow">— case 0047 · flop —</div>
+            <div className="hero-eyebrow">river | case 0047 · flop</div>
             <div className="hero-hand">
               A<span className="suit-r">♠</span>K<span className="suit-r">♦</span>
             </div>
@@ -79,7 +79,7 @@ export function HeroSection() {
             </div>
           </div>
           <div className="hero-phase" ref={phase3Ref} style={{ opacity: 0 }}>
-            <div className="hero-eyebrow">— the verdict —</div>
+            <div className="hero-eyebrow">river | the verdict</div>
             <div className="hero-equity">
               <span ref={equityRef}>0.0</span>
               <span className="unit">%</span>
