@@ -31,7 +31,11 @@ impl Derive for Abstraction {
     }
 
     fn creates() -> String {
-        "CREATE TABLE IF NOT EXISTS abstraction (
+        // River abstractions encode an equity bucket index, so get_equity has to divide by the
+        // same denominator Abstraction::floatize uses. Hardcoding it only happens to be right
+        // when the bucket count is 101.
+        format!(
+            "CREATE TABLE IF NOT EXISTS abstraction (
             abs         BIGINT,
             street      SMALLINT,
             population  INTEGER,
@@ -52,15 +56,16 @@ impl Derive for Abstraction {
 
         CREATE OR REPLACE FUNCTION get_equity(parent BIGINT) RETURNS REAL AS
         $$ BEGIN RETURN CASE WHEN get_street_abs(parent) = 3
-            THEN (parent & 255)::REAL / 100
+            THEN (parent & 255)::REAL / {}
             ELSE (
                 SELECT COALESCE(SUM(t.dx * r.equity) / NULLIF(SUM(t.dx), 0), 0)
                 FROM transitions t
                 JOIN abstraction r ON t.next = r.abs
                 WHERE                 t.prev = parent) END; END; $$
         LANGUAGE plpgsql;
-        "
-        .into()
+        ",
+            Abstraction::size() - 1
+        )
     }
 
     fn indexes() -> String {

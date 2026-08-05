@@ -138,10 +138,10 @@ impl crate::save::upload::Table for Encoder {
     }
     fn indices() -> String {
         "
-            CREATE INDEX IF NOT EXISTS idx_isomorphism_covering     ON isomorphism  (obs, abs) INCLUDE (abs);
+            -- (abs, obs) and a bare (abs) are both prefixes of (abs, position), which every
+            -- abs-keyed query already uses to pick a sample by position — three overlapping
+            -- indexes cost ~90MB here and buy nothing.
             CREATE INDEX IF NOT EXISTS idx_isomorphism_abs_position ON isomorphism  (abs, position);
-            CREATE INDEX IF NOT EXISTS idx_isomorphism_abs_obs      ON isomorphism  (abs, obs);
-            CREATE INDEX IF NOT EXISTS idx_isomorphism_abs          ON isomorphism  (abs);
             CREATE INDEX IF NOT EXISTS idx_isomorphism_obs          ON isomorphism  (obs);
             --
             WITH numbered AS (

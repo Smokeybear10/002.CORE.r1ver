@@ -530,6 +530,20 @@ impl Game {
     }
 
     pub fn edgify(&self, action: Action) -> crate::gameplay::edge::Edge {
+        self.edgify_within(action, &crate::gameplay::odds::Odds::GRID)
+    }
+
+    /// as edgify, but snapping raises to `grid` rather than the full preflop grid.
+    ///
+    /// the tree only branches to the sizings Encoder::raises offers for the current street
+    /// and aggression depth — five on the flop, two or one later. Snapping against the ten
+    /// preflop sizings can produce an Edge that exists in no infoset, which reads as an
+    /// untrained state rather than the mis-snapped bet it actually is.
+    pub fn edgify_within(
+        &self,
+        action: Action,
+        grid: &[crate::gameplay::odds::Odds],
+    ) -> crate::gameplay::edge::Edge {
         use crate::gameplay::edge::Edge;
         use crate::gameplay::odds::Odds;
         match action {
@@ -538,7 +552,7 @@ impl Game {
             Action::Draw(_) => Edge::Draw,
             Action::Shove(_) => Edge::Shove,
             Action::Blind(_) | Action::Call(_) => Edge::Call,
-            Action::Raise(amount) => Edge::Raise(Odds::nearest((amount, self.pot()))),
+            Action::Raise(amount) => Edge::Raise(Odds::nearest_of((amount, self.pot()), grid)),
         }
     }
 }

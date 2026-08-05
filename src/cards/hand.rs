@@ -164,7 +164,8 @@ impl From<Card> for Hand {
 impl TryFrom<&str> for Hand {
     type Error = String;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        Ok(s.split_whitespace()
+        let cards = s
+            .split_whitespace()
             .map(|token| {
                 token
                     .chars()
@@ -176,8 +177,14 @@ impl TryFrom<&str> for Hand {
             })
             .flatten()
             .flatten()
-            .collect::<Vec<Card>>()
-            .into())
+            .collect::<Vec<Card>>();
+        // Ranks outside the deck (2-5 under shortdeck) parse as valid Cards, but From<u64>
+        // masks their bits away — so the Hand silently comes back short and downstream
+        // size assertions fire. Reject them here, where we can still return an error.
+        if let Some(card) = cards.iter().find(|c| u64::from(**c) & !Self::mask() != 0) {
+            return Err(format!("{} is not in the deck", card));
+        }
+        Ok(cards.into())
     }
 }
 
@@ -217,8 +224,8 @@ mod tests {
 
     #[test]
     fn card_iteration() {
-        let mut iter = Hand::try_from("Jc Ts 2c Js").unwrap().into_iter();
-        assert_eq!(iter.next(), Some(Card::try_from("2c").unwrap()));
+        let mut iter = Hand::try_from("Jc Ts 6c Js").unwrap().into_iter();
+        assert_eq!(iter.next(), Some(Card::try_from("6c").unwrap()));
         assert_eq!(iter.next(), Some(Card::try_from("Ts").unwrap()));
         assert_eq!(iter.next(), Some(Card::try_from("Jc").unwrap()));
         assert_eq!(iter.next(), Some(Card::try_from("Js").unwrap()));

@@ -43,15 +43,40 @@ impl Server {
                 .route("/hst-wrt-abs", web::post().to(hst_wrt_abs))
                 .route("/hst-wrt-obs", web::post().to(hst_wrt_obs))
                 .route("/blueprint", web::post().to(blueprint))
+                // every other route is POST-only, so hosting platforms have nothing to
+                // probe for liveness without this
+                .route("/health", web::get().to(health))
         })
         .workers(6)
-        .bind("127.0.0.1:3002")?
+        // Bind all interfaces when hosted — a loopback bind is unreachable from
+        // outside the container. PORT is what most platforms inject.
+        .bind((
+            std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".into()),
+            std::env::var("PORT")
+                .ok()
+                .and_then(|p| p.parse().ok())
+                .unwrap_or(3002),
+        ))?
         .run()
         .await
     }
 }
 
 // Route handlers
+
+async fn health(api: web::Data<API>) -> impl Responder {
+    // a liveness probe that doesn't touch the database would stay green while every
+    // real route 500s, so check the connection too. cover every street: the river is
+    // the one that doesn't join the isomorphism table, so probing a single street
+    // leaves the path most likely to break unmonitored.
+    for street in [Street::Pref, Street::Flop, Street::Turn, Street::Rive] {
+        if let Err(e) = api.exp_wrt_str(street).await {
+            return HttpResponse::ServiceUnavailable()
+                .body(format!("{} lookup failed: {}", street, e));
+        }
+    }
+    HttpResponse::Ok().json(serde_json::json!({ "status": "ok" }))
+}
 
 async fn replace_obs(api: web::Data<API>, req: web::Json<ReplaceObs>) -> impl Responder {
     let obs = Observation::try_from(req.obs.as_str());
@@ -111,6 +136,8 @@ async fn nbr_abs_wrt_abs(api: web::Data<API>, req: web::Json<ReplaceOne>) -> imp
     match (wrt, abs) {
         (Err(_), _) => HttpResponse::BadRequest().body("invalid abstraction format"),
         (_, Err(_)) => HttpResponse::BadRequest().body("invalid abstraction format"),
+        (Ok(wrt), Ok(abs)) if wrt.street() != abs.street() => HttpResponse::BadRequest()
+            .body("both abstractions must be on the same street to be comparable"),
         (Ok(wrt), Ok(abs)) => match api.nbr_abs_wrt_abs(wrt, abs).await {
             Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
             Ok(row) => HttpResponse::Ok().json(row),
@@ -123,6 +150,10 @@ async fn nbr_obs_wrt_abs(api: web::Data<API>, req: web::Json<ReplaceRow>) -> imp
     match (wrt, obs) {
         (Err(_), _) => HttpResponse::BadRequest().body("invalid abstraction format"),
         (_, Err(_)) => HttpResponse::BadRequest().body("invalid observation format"),
+        // the metric only holds within-street pairs, so a cross-street comparison has no
+        // distance to report — that's a bad request, not a server fault.
+        (Ok(abs), Ok(obs)) if abs.street() != obs.street() => HttpResponse::BadRequest()
+            .body("the observation and abstraction must be on the same street"),
         (Ok(abs), Ok(obs)) => match api.nbr_obs_wrt_abs(abs, obs).await {
             Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
             Ok(rows) => HttpResponse::Ok().json(rows),
@@ -206,8 +237,43 @@ async fn blueprint(api: web::Data<API>, req: web::Json<GetPolicy>) -> impl Respo
         .collect::<Result<Vec<_>, _>>();
     match (hero, seen, path) {
         (Ok(hero), Ok(seen), Ok(path)) => {
-            match api.policy(Recall::from((hero, seen, path))).await {
+            let recall = Recall::from((hero, seen, path));
+            // Game::act asserts legality, so an impossible history would panic the worker
+            // rather than reach the query. Blinds are already posted at the root, and the
+            // board must match the cards revealed by the history.
+            if !recall.consistent() {
+                return HttpResponse::BadRequest()
+                    .body("board does not match the cards dealt in the action history");
+            }
+            if !recall.legal() {
+                return HttpResponse::BadRequest().body(
+                    "illegal action history (blinds are already posted; \
+                     CALL and RAISE amounts are chips added to your current stake)",
+                );
+            }
+            match recall.head().turn() {
+                Turn::Terminal => {
+                    return HttpResponse::BadRequest()
+                        .body("the hand is over — no decision to make at a terminal state")
+                }
+                Turn::Chance => {
+                    return HttpResponse::BadRequest().body(
+                        "it is the dealer's turn — reveal the next street with a DEAL action \
+                         before asking for a strategy",
+                    )
+                }
+                // the query is keyed on the game state, not on `turn`, so a mismatched player
+                // would silently get a strategy for whoever is actually to act
+                Turn::Choice(seat) if hero != Turn::Choice(seat) => {
+                    return HttpResponse::BadRequest()
+                        .body(format!("it is P{}'s turn to act, not {}", seat, hero))
+                }
+                Turn::Choice(_) => {}
+            }
+            match api.policy(recall).await {
                 Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
+                Ok(rows) if rows.is_empty() => HttpResponse::NotFound()
+                    .body("the blueprint has no strategy trained for this game state"),
                 Ok(rows) => HttpResponse::Ok().json(rows),
             }
         }

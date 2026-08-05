@@ -115,11 +115,11 @@ mod tests {
     fn pocket_rank_symmetry() {
         let a = Isomorphism::from(Observation::from((
             Hand::try_from("Ac Ad").unwrap(),
-            Hand::try_from("Jc Ts 5s").unwrap(),
+            Hand::try_from("Jc Ts 6s").unwrap(),
         )));
         let b = Isomorphism::from(Observation::from((
             Hand::try_from("As Ah").unwrap(),
-            Hand::try_from("Js Tc 5c").unwrap(),
+            Hand::try_from("Js Tc 6c").unwrap(),
         )));
         assert!(a == b);
     }
@@ -141,11 +141,11 @@ mod tests {
     fn offsuit_backdoor() {
         let a = Isomorphism::from(Observation::from((
             Hand::try_from("As Jh").unwrap(),
-            Hand::try_from("Ks Js 2d").unwrap(),
+            Hand::try_from("Ks Js 6d").unwrap(),
         )));
         let b = Isomorphism::from(Observation::from((
             Hand::try_from("Ah Jd").unwrap(),
-            Hand::try_from("Kh Jh 2c").unwrap(),
+            Hand::try_from("Kh Jh 6c").unwrap(),
         )));
         assert!(a == b);
     }
@@ -154,11 +154,11 @@ mod tests {
     fn offsuit_draw() {
         let a = Isomorphism::from(Observation::from((
             Hand::try_from("As Qh").unwrap(),
-            Hand::try_from("Ks Js 2s").unwrap(),
+            Hand::try_from("Ks Js 6s").unwrap(),
         )));
         let b = Isomorphism::from(Observation::from((
             Hand::try_from("Ad Qh").unwrap(),
-            Hand::try_from("Kd Jd 2d").unwrap(),
+            Hand::try_from("Kd Jd 6d").unwrap(),
         )));
         assert!(a == b);
     }

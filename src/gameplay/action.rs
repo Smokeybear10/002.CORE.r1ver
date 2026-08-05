@@ -117,7 +117,7 @@ impl TryFrom<&str> for Action {
     type Error = &'static str;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         let parts: Vec<&str> = s.split_whitespace().collect();
-        match parts[0].to_uppercase().as_str() {
+        match parts.first().ok_or("empty action")?.to_uppercase().as_str() {
             "CHECK" => Ok(Action::Check),
             "FOLD" => Ok(Action::Fold),
             "CALL" => parts
@@ -179,7 +179,7 @@ mod tests {
             Action::Blind(2),
             Action::Call(32767),
             Action::Shove(1738),
-            Action::Draw(Hand::try_from("2c Th As").unwrap()),
+            Action::Draw(Hand::try_from("6c Th As").unwrap()),
         ] {
             assert!(action == Action::from(u32::from(action)));
         }

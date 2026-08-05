@@ -55,6 +55,9 @@ const KMEANS_TURN_TRAINING_ITERATIONS: usize = 24;
 #[cfg(feature = "demo")]
 const KMEANS_TURN_TRAINING_ITERATIONS: usize = 3;
 
+// Metric::street() infers which street a metric belongs to from its pair count, choose_2(k),
+// so the three cluster counts below must stay distinct — equal counts collide and one street's
+// metric overwrites another's.
 #[cfg(not(feature = "demo"))]
 const KMEANS_FLOP_CLUSTER_COUNT: usize = 128;
 #[cfg(feature = "demo")]
@@ -63,12 +66,12 @@ const KMEANS_FLOP_CLUSTER_COUNT: usize = 8;
 #[cfg(not(feature = "demo"))]
 const KMEANS_TURN_CLUSTER_COUNT: usize = 144;
 #[cfg(feature = "demo")]
-const KMEANS_TURN_CLUSTER_COUNT: usize = 8;
+const KMEANS_TURN_CLUSTER_COUNT: usize = 12;
 
 #[cfg(not(feature = "demo"))]
 const KMEANS_EQTY_CLUSTER_COUNT: usize = 101;
 #[cfg(feature = "demo")]
-const KMEANS_EQTY_CLUSTER_COUNT: usize = 8;
+const KMEANS_EQTY_CLUSTER_COUNT: usize = 16;
 
 /// rps mccfr parameteres
 const ASYMMETRIC_UTILITY: f32 = 2.0;
@@ -111,7 +114,9 @@ pub fn progress(n: usize) -> indicatif::ProgressBar {
 /// initialize logging and setup graceful interrupt listener
 #[cfg(feature = "native")]
 pub fn log() {
-    std::fs::create_dir_all("logs").expect("create logs directory");
+    // Hosted containers often have a read-only working directory, and file logging is a
+    // convenience — losing it shouldn't stop the process from starting.
+    let logfile = std::fs::create_dir_all("logs").is_ok();
     let config = simplelog::ConfigBuilder::new()
         .set_location_level(log::LevelFilter::Off)
         .set_target_level(log::LevelFilter::Off)
@@ -121,18 +126,24 @@ pub fn log() {
         .duration_since(std::time::UNIX_EPOCH)
         .expect("time moves slow")
         .as_secs();
-    let file = simplelog::WriteLogger::new(
-        log::LevelFilter::Debug,
-        config.clone(),
-        std::fs::File::create(format!("logs/{}.log", time)).expect("create log file"),
-    );
     let term = simplelog::TermLogger::new(
         log::LevelFilter::Info,
         config.clone(),
         simplelog::TerminalMode::Mixed,
         simplelog::ColorChoice::Auto,
     );
-    simplelog::CombinedLogger::init(vec![term, file]).expect("initialize logger");
+    let mut loggers: Vec<Box<dyn simplelog::SharedLogger>> = vec![term];
+    if let Some(file) = logfile
+        .then(|| std::fs::File::create(format!("logs/{}.log", time)).ok())
+        .flatten()
+    {
+        loggers.push(simplelog::WriteLogger::new(
+            log::LevelFilter::Debug,
+            config.clone(),
+            file,
+        ));
+    }
+    simplelog::CombinedLogger::init(loggers).expect("initialize logger");
 }
 
 /// get a database connection and return the client

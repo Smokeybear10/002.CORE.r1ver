@@ -32,10 +32,15 @@ impl Writer {
         postgres.upload::<Metric>().await?;
         postgres.upload::<Decomp>().await?;
         postgres.upload::<Encoder>().await?;
-        if std::path::Path::new("pgcopy/blueprint").exists() {
+        use crate::Arbitrary;
+        let ref blueprint = <Profile as crate::save::disk::Disk>::path(Street::random());
+        if blueprint.exists() {
             postgres.upload::<Profile>().await?;
         } else {
-            log::info!("skipping blueprint upload (pgcopy/blueprint missing — run trainer first)");
+            log::info!(
+                "skipping blueprint upload ({} missing — run trainer first)",
+                blueprint.display()
+            );
         }
         postgres.derive::<Abstraction>().await?;
         postgres.derive::<Street>().await?;
@@ -92,9 +97,17 @@ impl Writer {
         let writer = BinaryCopyInWriter::new(sink, T::columns());
         futures::pin_mut!(writer);
         let ref mut fields = [0u8; 2];
+        // Skip streets whose files weren't generated — a partial dataset should upload what it has
+        // rather than abort the whole publish.
         for ref mut reader in T::sources()
             .iter()
-            .map(|s| File::open(s).expect("file not found"))
+            .filter_map(|s| match File::open(s) {
+                Ok(file) => Some(file),
+                Err(_) => {
+                    log::warn!("skipping missing source {}", s.display());
+                    None
+                }
+            })
             .map(|f| BufReader::new(f))
         {
             reader.seek(std::io::SeekFrom::Start(19)).unwrap();

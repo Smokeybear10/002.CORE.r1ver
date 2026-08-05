@@ -117,15 +117,22 @@ impl crate::save::disk::Disk for Profile {
         unreachable!("must be learned in MCCFR minimization")
     }
     fn path(_: Street) -> std::path::PathBuf {
+        // The blueprint isn't per-street, so it can't use the trait default — but it still has
+        // to land in the same subdir as the clustering output the publisher reads alongside it.
+        #[cfg(feature = "demo")]
+        let subdir = "pgcopy/demo";
+        #[cfg(not(feature = "demo"))]
+        let subdir = "pgcopy";
         let ref path = format!(
-            "{}/pgcopy/{}",
+            "{}/{}/{}",
             std::env::current_dir()
                 .unwrap_or_default()
                 .to_string_lossy()
                 .into_owned(),
+            subdir,
             Self::name()
         );
-        std::path::Path::new(path).parent().map(std::fs::create_dir);
+        std::path::Path::new(path).parent().map(std::fs::create_dir_all);
         std::path::PathBuf::from(path)
     }
     fn load(_: Street) -> Self {

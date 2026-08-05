@@ -335,14 +335,20 @@ pub trait Profile {
     /// and that we sample the Tree according to Profile,
     /// how much Utility do we expect upon
     /// visiting this Node?
+    ///
+    /// This is the baseline that cfactual_value is measured against, so it has to be the
+    /// policy-weighted average over the branches: sum_a policy(a) * cfactual_value(a).
+    /// relative_reach stops at the root (take_while parent != root), so it does NOT include
+    /// the probability of the root's own outgoing edge — summing over all descendants
+    /// therefore yields sum_a v(a), which overcounts the baseline by roughly the branching
+    /// factor and leaves every regret in the infoset negative whenever v is positive.
     fn expected_value(&self, root: &Node<Self::T, Self::E, Self::G, Self::I>) -> crate::Utility {
         assert!(self.walker() == root.game().turn());
-        self.expected_reach(root)
-            * root
-                .descendants()
-                .iter()
-                .map(|leaf| self.relative_value(root, leaf))
-                .sum::<crate::Utility>()
+        root.info()
+            .choices()
+            .iter()
+            .map(|edge| self.policy(root.info(), edge) * self.cfactual_value(root, edge))
+            .sum::<crate::Utility>()
     }
     /// If, counterfactually,
     /// we had intended to get ourselves in this infoset,
