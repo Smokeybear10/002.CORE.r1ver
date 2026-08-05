@@ -52,9 +52,13 @@ const ACTION_LABELS: Record<string, string> = {
   "!": "Shove",
 }
 
+// A raise arrives as the reduced pot fraction it was trained on — "2/3", "3/2" — so a whole
+// pot reads better as "1 pot" than as "1/1".
 function actionLabel(edge: string): string {
   if (edge in ACTION_LABELS) return ACTION_LABELS[edge]
-  return `Raise ${edge}`
+  const [numer, denom] = edge.split("/").map(Number)
+  if (!denom || Number.isNaN(numer)) return `Raise ${edge}`
+  return `Raise ${denom === 1 ? numer : edge} pot`
 }
 
 function VerdictBlock({ decisions }: { decisions: Decision[] }) {
@@ -79,8 +83,8 @@ function VerdictBlock({ decisions }: { decisions: Decision[] }) {
           const w = (d.mass / maxMass) * 100
           const isTop = i === 0
           return (
-            <div key={d.edge} style={{
-              display: "grid", gridTemplateColumns: "90px 1fr 52px",
+            <div key={`${d.edge}-${i}`} style={{
+              display: "grid", gridTemplateColumns: "118px 1fr 52px",
               gap: 14, alignItems: "center",
             }}>
               <span style={{
@@ -89,6 +93,7 @@ function VerdictBlock({ decisions }: { decisions: Decision[] }) {
                 fontSize: 13,
                 color: isTop ? "#c9a84c" : "rgba(201,168,76,0.55)",
                 textAlign: "right",
+                whiteSpace: "nowrap",
               }}>
                 {actionLabel(d.edge)}
               </span>
@@ -210,7 +215,9 @@ function StreetRow({
 }
 
 export default function StrategyPage() {
-  const [turn, setTurn] = useState("P0")
+  // heads-up, the dealer posts the small blind and acts first preflop, so P1 is to act at
+  // the root — defaulting to P0 makes the very first query fail
+  const [turn, setTurn] = useState("P1")
   const [hand, setHand] = useState("")
   const [actions, setActions] = useState("")
   const [data, setData] = useState<StrategyState>(null)
@@ -293,7 +300,7 @@ export default function StrategyPage() {
                 type="text"
                 value={hand}
                 onChange={(e) => setHand(e.target.value)}
-                placeholder="AsKd~7h8c2s"
+                placeholder="AsKd~"
                 className="inner-input px-4 py-2.5 text-sm"
               />
 
@@ -302,7 +309,7 @@ export default function StrategyPage() {
                 type="text"
                 value={actions}
                 onChange={(e) => setActions(e.target.value)}
-                placeholder="BLIND 1, BLIND 2, RAISE 6, CALL 4"
+                placeholder="RAISE 6, CALL 5"
                 className="inner-input px-4 py-2.5 text-sm"
               />
             </div>
@@ -317,8 +324,9 @@ export default function StrategyPage() {
           </form>
 
           <div className="mt-6 space-y-1 font-mono" style={{ color: "rgba(201,168,76,0.12)", fontSize: 11 }}>
-            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Format:</span> pocket~board e.g. AsKd~7h8c2s</p>
-            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Actions:</span> BLIND 1, CALL 4, RAISE 10, CHECK, FOLD, SHOVE 100, DEAL 7h8c2s</p>
+            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Format:</span> pocket~board e.g. AsKd~ or AsKd~7h8c9s (sixes and up)</p>
+            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Actions:</span> CALL 5, RAISE 6, CHECK, FOLD, SHOVE 100, DEAL 7h8c9s</p>
+            <p><span style={{ color: "rgba(201,168,76,0.25)" }}>Note:</span> blinds are already posted; amounts are chips added to your stake</p>
           </div>
         </div>
 

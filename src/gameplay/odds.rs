@@ -29,11 +29,25 @@ impl Odds {
         (a, b)
     }
     pub fn nearest((a, b): (Chips, Chips)) -> Self {
+        Self::nearest_of((a, b), &Self::GRID)
+    }
+
+    /// snap a bet to the closest sizing the given grid offers.
+    ///
+    /// which grid matters: only the preflop grid has all ten entries, so snapping a flop
+    /// bet against GRID can land on a sizing the tree never branches to (a quarter-pot
+    /// flop bet, say), and the resulting Edge appears in no infoset the trainer wrote.
+    /// `nearest` keeps the preflop default for callers that are preflop by construction.
+    pub fn nearest_of((a, b): (Chips, Chips), grid: &[Self]) -> Self {
         let odds = a as Utility / b as Utility;
-        Odds::GRID[Odds::GRID
-            .map(|o| Probability::from(o)) // pre-sorted
-            .binary_search_by(|p| p.partial_cmp(&odds).expect("not NaN"))
-            .unwrap_or_else(|i| i.saturating_sub(1))]
+        grid.iter()
+            .min_by(|x, y| {
+                let dx = (Probability::from(**x) - odds).abs();
+                let dy = (Probability::from(**y) - odds).abs();
+                dx.partial_cmp(&dy).expect("not NaN")
+            })
+            .copied()
+            .unwrap_or(Self(1, 1))
     }
     pub const GRID: [Self; 10] = Self::PREF_RAISES;
     pub const PREF_RAISES: [Self; 10] = [
@@ -64,14 +78,16 @@ impl Odds {
     ];
 }
 
+/// the sizing as a pot fraction, e.g. `2/3` or `3/2`.
+///
+/// the previous format rounded the ratio to an integer, which is not injective over the
+/// grid: 1/2 and 2/3 both came out `+2`, 3/4 and 1/1 both `+1`, 3/2 and 2/1 both `-2`. a
+/// strategy therefore listed the same label two or three times with different weights, and
+/// the reader had no way to tell which sizing each row meant. the pair is already reduced
+/// by gcd in the constructor, so printing it distinguishes every entry in every grid.
 impl std::fmt::Display for Odds {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let p = Probability::from(*self);
-        if p > 1.0 {
-            write!(f, "-{}", (p * 1.0).round() as i32)
-        } else {
-            write!(f, "+{}", (1.0 / p).round() as i32)
-        }
+        write!(f, "{}/{}", self.0, self.1)
     }
 }
 
