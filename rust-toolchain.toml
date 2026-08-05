@@ -1,0 +1,4 @@
+[toolchain]
+# Pinned so a hosted build resolves the same compiler the code was tested against —
+# transitive deps regularly raise their minimum rustc and would otherwise break the deploy.
+channel = "1.90.0"

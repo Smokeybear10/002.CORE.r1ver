@@ -2,7 +2,9 @@
 
 **Live demo: [river-002.vercel.app](https://river-002.vercel.app)**
 
-A Rust solver and Next.js frontend for No-Limit Texas Hold'em, in functional parity with Pluribus — the first superhuman agent in multiplayer poker.
+> The landing page and write-up are live. The Hand Explorer and Strategy viewer query the Rust solver API, which isn't hosted — run it locally with the Quick Start below to use them.
+
+A Rust solver and Next.js frontend for No-Limit Texas Hold'em. Implements the Pluribus abstraction and blueprint-training stack — hierarchical clustering over equity distributions and external-sampling MCCFR. Depth-limited subgame search, the other half of Pluribus, is not built yet.
 
 ## Quick Start
 
