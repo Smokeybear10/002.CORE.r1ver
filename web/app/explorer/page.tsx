@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { api, type Sample } from "@/app/lib/api"
-import { streetName, streetFromAbs } from "@/app/lib/cards"
+import { streetName, streetFromAbs, clusterPopulation } from "@/app/lib/cards"
 import { ObservationDisplay } from "@/app/components/card"
 import { EquityBar } from "@/app/components/equity-bar"
 import { Histogram } from "@/app/components/histogram"
@@ -145,7 +145,7 @@ export default function ExplorerPage() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="AsKd~7h8c2s"
+                    placeholder="AsKd~7h8c9s"
                     className="inner-input flex-1 px-4 py-2 text-sm"
                   />
                   <button
@@ -156,10 +156,15 @@ export default function ExplorerPage() {
                     Go
                   </button>
                 </form>
+                {/* the dataset is short-deck, so a hand with a 2 through 5 is rejected —
+                    say so here rather than letting the API's parse error explain it */}
+                <p className="font-mono mt-3" style={{ color: "rgba(201,168,76,0.18)", fontSize: 10, letterSpacing: 1 }}>
+                  pocket~board, sixes and up · e.g. AsKd~ or AsKd~7h8c9s
+                </p>
                 <button
                   type="button"
                   onClick={() => setMode("pick")}
-                  className="font-mono mt-3"
+                  className="font-mono mt-2"
                   style={{ color: "rgba(201,168,76,0.12)", fontSize: 10, letterSpacing: 1, background: "none", border: "none", cursor: "pointer" }}
                   onMouseEnter={e => e.currentTarget.style.color = "rgba(201,168,76,0.3)"}
                   onMouseLeave={e => e.currentTarget.style.color = "rgba(201,168,76,0.12)"}
@@ -187,13 +192,15 @@ export default function ExplorerPage() {
       {(data || loading || error) && (
         <div className="inner-main" style={{ paddingBottom: 0 }}>
           <form onSubmit={handleSubmit} className="flex gap-3 mb-8">
-            <div className="flex" style={{ border: "1px solid rgba(201,168,76,0.08)" }}>
+            {/* the street tabs must keep their intrinsic width — the flex-1 input beside
+                them will otherwise squeeze all four labels into an unreadable overlap */}
+            <div className="flex flex-shrink-0" style={{ border: "1px solid rgba(201,168,76,0.08)" }}>
               {["P", "F", "T", "R"].map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setStreet(s)}
-                  className="px-3 py-2 text-xs font-mono transition-all duration-200"
+                  className="px-3 py-2 text-xs font-mono transition-all duration-200 whitespace-nowrap"
                   style={{
                     background: street === s ? "rgba(201,168,76,0.06)" : "transparent",
                     color: street === s ? "#c9a84c" : "rgba(201,168,76,0.15)",
@@ -209,7 +216,7 @@ export default function ExplorerPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="AsKd~7h8c2s"
+              placeholder="AsKd~7h8c9s"
               className="inner-input flex-1 px-4 py-2 text-sm font-mono"
             />
             <button
@@ -293,14 +300,18 @@ export default function ExplorerPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 1, background: "rgba(201,168,76,0.04)" }}>
             <StatBox label="Cluster" value={data.sample.abs} sub={streetName(streetFromAbs(data.sample.abs))} />
             <StatBox label="Equity" value={`${(data.sample.equity * 100).toFixed(1)}%`} sub={strengthLabel(data.sample.equity)} />
-            <StatBox label="Density" value={`${(data.sample.density * 100).toFixed(2)}%`} sub="of observation space" />
+            <StatBox label="Density" value={`${(data.sample.density * 100).toFixed(2)}%`} sub="of isomorphism space" />
             <StatBox label="Distance" value={data.sample.distance.toFixed(4)} sub="from centroid" />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "rgba(201,168,76,0.04)", marginTop: 1 }}>
             <StatBox label="Observation" value={data.sample.obs} />
             <StatBox label="Win Probability" value={`${(data.sample.equity * 100).toFixed(1)}%`} sub={`${((1 - data.sample.equity) * 100).toFixed(1)}% lose`} />
-            <StatBox label="Cluster Population" value={`${(data.sample.density * 10000).toFixed(0)}`} sub="observations in cluster" />
+            <StatBox
+              label="Cluster Population"
+              value={clusterPopulation(data.sample.abs, data.sample.density).toLocaleString()}
+              sub="hands in cluster"
+            />
           </div>
 
           {/* Histogram */}

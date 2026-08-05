@@ -3,8 +3,14 @@
 import { useState } from "react"
 import { suitSymbol } from "@/app/lib/cards"
 
-const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
+// The published dataset was trained on a short deck — the solver's HandIterator masks off
+// 2 through 5, so offering them here would let you build a hand the API can only reject.
+const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6"]
 const SUITS = ["s", "h", "d", "c"] as const
+
+// A board only exists at a street boundary: preflop, flop, turn, river. Nothing is trained
+// for one or two board cards, so those aren't offerable states.
+const STREETS = [0, 3, 4, 5]
 
 type PickerCard = { rank: string; suit: string }
 
@@ -75,7 +81,7 @@ export function CardPicker({
     setBoard([])
   }
 
-  const canExplore = pocket.length === 2
+  const canExplore = pocket.length === 2 && STREETS.includes(board.length)
   const showBoard = pocket.length === 2
 
   return (
@@ -175,7 +181,17 @@ export function CardPicker({
         marginTop: 16,
       }}>
         <span className="font-mono" style={{ color: "rgba(201,168,76,0.22)", fontSize: 10, letterSpacing: 1 }}>
-          {pocket.length < 2 ? "Select 2 hole cards" : board.length === 0 ? "Add board cards or explore preflop" : board.length < 5 ? `${board.length} board card${board.length > 1 ? "s" : ""}` : "Board complete"}
+          {pocket.length < 2
+            ? "Select 2 hole cards"
+            : board.length === 0
+            ? "Add a 3-card flop, or explore preflop"
+            : board.length < 3
+            ? `${3 - board.length} more for the flop`
+            : board.length === 3
+            ? "Flop — add a turn card, or explore"
+            : board.length === 4
+            ? "Turn — add a river card, or explore"
+            : "River — board complete"}
         </span>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
